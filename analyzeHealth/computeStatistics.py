@@ -536,12 +536,30 @@ def cross_validated_health(adult_df, independent_variables = ['autofluorescence'
 	print('Cross-validated r^2 is ', quick_pearson(np.ndarray.flatten(predicted_life), adult_df.flat_data(['ghost_age'])[0]))
 	return predicted_life
 
-def svr_data(complete_df, independent_variables, dependent_variable = 'ghost_age'):
+def svr_data(complete_df, independent_variables, dependent_variable = 'ghost_age', SVM_directory='', svm_fp_out=''):
 	'''	
 	Compute predicted lifespan remaining for independent_variables using an SVM.
 	'''
-	# Get only non-null values to feed into my SVR.	
-	(my_svm, dependent_data, independent_data) = multiple_nonlinear_regression(complete_df, independent_variables, dependent_variable)
+
+	if SVM_directory = '':
+		# Get only non-null values to feed into my SVR.	
+		(my_svm, dependent_data, independent_data) = multiple_nonlinear_regression(complete_df, independent_variables, dependent_variable)
+	else:
+		# Copied from multiple nonlinear regression
+		with open(SVM_directory+os.path.sep+'health_'+dependent_variable+'SVR.pickle','rb' as my_file:
+			my_svm_data = pickle.load(my_file)
+			my_svm = my_svm_data['my_svm']
+		independent_data  = np.array([np.ndarray.flatten(complete_df.mloc(measures = [independent_variable])) for independent_variable in independent_variables])
+		dependent_data = np.ndarray.flatten(complete_df.mloc(measures = [dependent_variable]))
+		together_data = np.vstack((independent_data, dependent_data)).transpose()
+		together_data = together_data[~np.isnan(together_data).any(axis = 1)]
+		independent_data  = together_data[:, :-1].copy()
+		dependent_data = together_data[:, -1]
+		
+	if svm_fp_out is not '':
+		with open(svm_fp_out,'wb') as my_svm_file:
+			pickle.dump({'my_svm':my_svm},my_svm_file)
+
 	variable_data = complete_df.mloc(complete_df.worms, independent_variables)
 	flat_variable_data = selectData.flatten_two_dimensions(variable_data, 1)
 	nonnan_values = ~(np.isnan(flat_variable_data).any(axis = 1))

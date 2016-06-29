@@ -45,6 +45,11 @@ class CompleteWormDF():
 			extra_arguments['smooth_mode'] = 'one'
 		if 'key_measures' not in extra_arguments.keys():		
 			extra_arguments['key_measures'] = ['intensity_80', 'cumulative_eggs', 'bulk_movement', 'adjusted_size', 'life_texture']
+		
+		if 'svm_directory' not in extra_arguments.keys():
+			extra_arguments['svm_directory'] = ''
+		if 'svm_fp_out' not in extra_arguments.keys():
+			extra_arguments['svm_fp_out'] = ''
 			
 		# Read in the raw data and set up some basic information.		
 		self.save_directory = save_directory
@@ -113,7 +118,7 @@ class CompleteWormDF():
 
 		# Add SVM-health data.
 		if 'total_size' in self.measures:
-			self.add_healths()
+			self.add_healths(extra_arguments)
 
 		# Save out my extra data if it has changed.
 		if self.extra_changed:
@@ -534,7 +539,7 @@ class CompleteWormDF():
 			self.add_column(my_rate, old_index, a_variable + '_rate')
 		return
 
-	def add_healths(self):
+	def add_healths(self, extra_arguments):
 		'''
 		Add 'health' measurements to both extra_data and to my columns.
 		'''
@@ -555,7 +560,7 @@ class CompleteWormDF():
 			if a_health not in self.extra_data.keys():
 				print('\t\tComputing health measure: ' + a_health + '.', flush = True)
 				self.extra_changed = True
-				(variable_data, svr_data, life_data) = computeStatistics.svr_data(self, health_measures[a_health], dependent_variable = 'ghost_age')
+				(variable_data, svr_data, life_data) = computeStatistics.svr_data(self, health_measures[a_health], dependent_variable = 'ghost_age', SVM_directory=extra_arguments['SVM_directory'], svm_fp_out = extra_arguments['svm_fp_out'][:-5]+health_measures[a_health]+extra_arguments['svm_fp_out'][-5:])
 				column_data = np.expand_dims(svr_data, axis = 1)
 				self.extra_data[a_health] = column_data
 				all_physiology.extend(health_measures[a_health])
@@ -566,7 +571,7 @@ class CompleteWormDF():
 		if 'health' not in self.extra_data.keys():
 			print('\t\tComputing overall health measure.', flush = True)
 			self.extra_changed = True
-			(variable_data, svr_data, life_data) = computeStatistics.svr_data(self, all_physiology, dependent_variable = 'ghost_age')
+			(variable_data, svr_data, life_data) = computeStatistics.svr_data(self, all_physiology, dependent_variable = 'ghost_age', SVM_directory=extra_arguments['SVM_directory'], svm_fp_out = extra_arguments['svm_fp_out'][:-5]+'health'+extra_arguments['svm_fp_out'][-5:])
 			column_data = np.expand_dims(svr_data, axis = 1)
 			self.extra_data['health'] = column_data
 		self.add_column(self.extra_data['health'], -3, 'health')
