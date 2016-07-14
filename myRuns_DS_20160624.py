@@ -72,33 +72,59 @@ if len(sys.argv) > 1:
     my_mode = int(sys.argv[1])
 
 # Locations of all the files I need.
-save_directory = r'C:\Users\Willie\Desktop\save_dir'
+#save_directory = r'C:\Users\Willie\Desktop\save_dir'
+save_directory = r'/mnt/bulkdata/wzhang/human_dir/age-1_health/'
 working_directory = r'\\heavenly.wucon.wustl.edu\wzhang\work_dir'
 human_directory = r'\\heavenly.wucon.wustl.edu\wzhang\human_dir'
+#data_directories = [
+    #r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.16 spe-9 Run 9',      #0
+    #r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.20 spe-9 Run 10A',    #1
+    #r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.20 spe-9 Run 10B',    #2
+    #r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.26 spe-9 Run 11A',    #3
+    #r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.26 spe-9 Run 11B',    #4
+    #r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.26 spe-9 Run 11C',    #5
+    #r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.26 spe-9 Run 11D',    #6
+    #r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.29 spe-9 Run 12A',    #7
+    #r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.29 spe-9 Run 12B',    #8
+    #r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.03.04 spe-9 Run 13A',    #9
+    #r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.03.04 spe-9 Run 13B',    #10
+    #r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.03.04 spe-9 Run 13C',    #11
+    #r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.03.14 spe-9 Run 14',     #12
+    #r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.03.25 spe-9 Run 15A',    #13
+    #r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.03.25 spe-9 Run 15B',    #14
+    #r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.03.31 spe-9 Run 16',      #15
+    #r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.05.02 spe-9 age-1 osxi346 Run 17A', #16
+    #r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.05.02 spe-9 age-1 osxi346 Run 17B', #17
+    #r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.05.02 spe-9 age-1 osxi346 Run 17C', #18
+    #r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.05.02 spe-9 age-1 osxi346 Run 17D', #19
+    #r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.05.02 spe-9 age-1 osxi346 Run 17E', #20
+    #r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.05.12 spe-9 age-1 Run 18B',   #21
+    #r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.05.24 spe-9 age-1 Run 24A',  #22 7 worms alive as of 20160624
+#]
 data_directories = [
-    r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.16 spe-9 Run 9',      #0
-    r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.20 spe-9 Run 10A',    #1
-    r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.20 spe-9 Run 10B',    #2
-    r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.26 spe-9 Run 11A',    #3
-    r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.26 spe-9 Run 11B',    #4
-    r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.26 spe-9 Run 11C',    #5
-    r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.26 spe-9 Run 11D',    #6
-    r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.29 spe-9 Run 12A',    #7
-    r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.29 spe-9 Run 12B',    #8
-    r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.03.04 spe-9 Run 13A',    #9
-    r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.03.04 spe-9 Run 13B',    #10
-    r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.03.04 spe-9 Run 13C',    #11
-    r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.03.14 spe-9 Run 14',     #12
-    r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.03.25 spe-9 Run 15A',    #13
-    r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.03.25 spe-9 Run 15B',    #14
-    r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.03.31 spe-9 Run 16',      #15
-    r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.05.02 spe-9 age-1 osxi346 Run 17A', #16
-    r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.05.02 spe-9 age-1 osxi346 Run 17B', #17
-    r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.05.02 spe-9 age-1 osxi346 Run 17C', #18
-    r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.05.02 spe-9 age-1 osxi346 Run 17D', #19
-    r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.05.02 spe-9 age-1 osxi346 Run 17E', #20
-    r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.05.12 spe-9 age-1 Run 18B',   #21
-    r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.05.24 spe-9 age-1 Run 24A',  #22 7 worms alive as of 20160624
+    r'\\mnt\iscopearray\Zhang_William\2016.02.16 spe-9 Run 9',      #0
+    r'\\mnt\iscopearray\Zhang_William\2016.02.20 spe-9 Run 10A',    #1
+    r'\\mnt\iscopearray\Zhang_William\2016.02.20 spe-9 Run 10B',    #2
+    r'\\mnt\iscopearray\Zhang_William\2016.02.26 spe-9 Run 11A',    #3
+    r'\\mnt\iscopearray\Zhang_William\2016.02.26 spe-9 Run 11B',    #4
+    r'\\mnt\iscopearray\Zhang_William\2016.02.26 spe-9 Run 11C',    #5
+    r'\\mnt\iscopearray\Zhang_William\2016.02.26 spe-9 Run 11D',    #6
+    r'\\mnt\iscopearray\Zhang_William\2016.02.29 spe-9 Run 12A',    #7
+    r'\\mnt\iscopearray\Zhang_William\2016.02.29 spe-9 Run 12B',    #8
+    r'\\mnt\iscopearray\Zhang_William\2016.03.04 spe-9 Run 13A',    #9
+    r'\\mnt\iscopearray\Zhang_William\2016.03.04 spe-9 Run 13B',    #10
+    r'\\mnt\iscopearray\Zhang_William\2016.03.04 spe-9 Run 13C',    #11
+    r'\\mnt\iscopearray\Zhang_William\2016.03.14 spe-9 Run 14',     #12
+    r'\\mnt\iscopearray\Zhang_William\2016.03.25 spe-9 Run 15A',    #13
+    r'\\mnt\iscopearray\Zhang_William\2016.03.25 spe-9 Run 15B',    #14
+    r'\\mnt\iscopearray\Zhang_William\2016.03.31 spe-9 Run 16',      #15
+    r'\\mnt\scopearray\ZhangWillie\2016.05.02 spe-9 age-1 osxi346 Run 17A', #16
+    r'\\mnt\scopearray\ZhangWillie\2016.05.02 spe-9 age-1 osxi346 Run 17B', #17
+    r'\\mnt\scopearray\ZhangWillie\2016.05.02 spe-9 age-1 osxi346 Run 17C', #18
+    r'\\mnt\scopearray\ZhangWillie\2016.05.02 spe-9 age-1 osxi346 Run 17D', #19
+    r'\\mnt\scopearray\ZhangWillie\2016.05.02 spe-9 age-1 osxi346 Run 17E', #20
+    r'\\mnt\scopearray\ZhangWillie\2016.05.12 spe-9 age-1 Run 18B',   #21
+    r'\\mnt\scopearray\ZhangWillie\2016.05.24 spe-9 age-1 Run 24A',  #22 7 worms alive as of 20160624
 ]
 extra_directories = [
     {'W': r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.02.16 spe-9 Run 9'},      #0
@@ -175,7 +201,7 @@ annotation_directories = [
     None,                                                                                     #21
     None,                                                                                     #22
 ]
-directory_bolus = folderStuff.DirectoryBolus(working_directory, human_directory, data_directories, extra_directories, experiment_directories, annotation_directories, done = 22, ready = 23)    
+directory_bolus = folderStuff.DirectoryBolus(working_directory, human_directory, data_directories, extra_directories, experiment_directories, annotation_directories, done = 16, ready = [16,23])    
 if sys.platform == 'linux':
     human_directory = folderStuff.linux_path(human_directory)
     working_directory = folderStuff.linux_path(working_directory)
@@ -205,5 +231,11 @@ if my_mode == 2:
 
 # Do the analysis.
 if my_mode == 3: 
-    adult_df = characterizeTrajectories.CompleteWormDF(directory_bolus, save_directory, {'adult_only': True})   
-    
+    #adult_df = characterizeTrajectories.CompleteWormDF(directory_bolus, save_directory, {'adult_only': True})   
+    #adult_df = characterizeTrajectories.CompleteWormDF(directory_bolus, save_directory, {'adult_only': True, 'svm_dir_out':'/mnt/bulkdata/wzhang/temp/'})
+    #with open('/mnt/bulkdata/wzhang/human_dir/debug_SVRload/df_rerun.pickle','wb') as my_file:
+        #pickle.dump({'adult_df':adult_df},my_file)
+       
+    adult_df = characterizeTrajectories.CompleteWormDF(directory_bolus, save_directory, {'adult_only': True, 'svm_directory':'/mnt/bulkdata/wzhang/human_dir/spe-9_health_SVR'})   
+    with open('/mnt/bulkdata/wzhang/human_dir//df_age-1.pickle','wb') as my_file:
+        pickle.dump({'adult_df':adult_df},my_file)

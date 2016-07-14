@@ -48,15 +48,21 @@ class CompleteWormDF():
 		
 		if 'svm_directory' not in extra_arguments.keys():
 			extra_arguments['svm_directory'] = ''
-		if 'svm_fp_out' not in extra_arguments.keys():
-			extra_arguments['svm_fp_out'] = ''
+		if 'svm_dir_out' not in extra_arguments.keys():
+			extra_arguments['svm_dir_out'] = ''
 			
 		# Read in the raw data and set up some basic information.		
 		self.save_directory = save_directory
 		self.key_measures = extra_arguments['key_measures']
 		
 		self.adult_only = extra_arguments['adult_only']
-		data_directories = directory_bolus.data_directories[:directory_bolus.ready]
+		if type(directory_bolus.ready) is int:
+			data_directories = directory_bolus.data_directories[:directory_bolus.ready]
+		elif type(directory_bolus.ready) is list:
+			data_directories = directory_bolus.data_directories[directory_bolus.ready[0]:directory_bolus.ready[1]]
+		print('Working on the following directories:')
+		[print(my_directory) for my_directory in data_directories]
+		
 		if os.path.isdir(data_directories[0]) and not extra_arguments['use_old']:
 			self.raw = self.read_trajectories(data_directories, save_directory)
 		else:
@@ -474,11 +480,13 @@ class CompleteWormDF():
 				if a_worm + '.tsv' in my_tsvs:
 					print('\tSkipping ' + a_worm + ', it is not yet done processing.')
 					my_tsvs.remove(a_worm + '.tsv')
-			for a_worm in never_eggs:
-				worm_file = [a_dir for a_dir in health_directories if ' '.join(a_worm.split(' ')[:-2]) + ' Run ' + a_worm.split(' ')[-2] in a_dir][0] + os.path.sep + a_worm.split(' ')[-1] + '.tsv'
-				if worm_file in my_tsvs:
-					print('\tSkipping ' + a_worm + ', it never laid eggs.')
-					my_tsvs.remove(worm_file)		
+					
+			#** Comment this out since note field was used to filter out worms previously... should be good, right?
+			#for a_worm in never_eggs:
+				#worm_file = [a_dir for a_dir in health_directories if ' '.join(a_worm.split(' ')[:-2]) + ' Run ' + a_worm.split(' ')[-2] in a_dir][0] + os.path.sep + a_worm.split(' ')[-1] + '.tsv'
+				#if worm_file in my_tsvs:
+					#print('\tSkipping ' + a_worm + ', it never laid eggs.')
+					#my_tsvs.remove(worm_file)		
 
 			worm_frames = {a_file.split(os.path.sep)[-3].replace(' Run ', ' ') + ' ' + a_file.split(os.path.sep)[-1].split('.')[-2]: pd.read_csv(a_file, sep = '\t', index_col = 0) for a_file in my_tsvs}		
 
@@ -560,18 +568,56 @@ class CompleteWormDF():
 			if a_health not in self.extra_data.keys():
 				print('\t\tComputing health measure: ' + a_health + '.', flush = True)
 				self.extra_changed = True
-				(variable_data, svr_data, life_data) = computeStatistics.svr_data(self, health_measures[a_health], dependent_variable = 'ghost_age', SVM_directory=extra_arguments['SVM_directory'], svm_fp_out = extra_arguments['svm_fp_out'][:-5]+health_measures[a_health]+extra_arguments['svm_fp_out'][-5:])
+				if extra_arguments['svm_directory'] is not '':
+					print('Using svm for '+a_health+' from ' + extra_arguments['svm_directory']+os.path.sep+a_health+'HealthSVR.pickle')
+					with open(extra_arguments['svm_directory']+os.path.sep+a_health+'HealthSVR.pickle','rb') as my_file:
+						my_svm_data = pickle.load(my_file)
+						if any([loaded_ind_var not in health_measures[a_health] for loaded_ind_var in my_svm_data['independent_variables']]) or \
+							any([desired_ind_var not in my_svm_data['independent_variables'] for desired_ind_var in health_measures[a_health]]):
+								raise BaseException('Trying to use an incompatible SVM for regression')
+						svm_to_use = my_svm_data['computed_svm']
+				else:
+					print('No SVM specified; recomputing SVM')
+					svm_to_use = None
+				
+				(variable_data, svr_data, life_data, computed_svm) = computeStatistics.svr_data(self, health_measures[a_health], dependent_variable = 'ghost_age', svm_to_use =svm_to_use)
+				
+				if extra_arguments['svm_dir_out'] is not '':
+					save_fp = extra_arguments['svm_dir_out']+os.path.sep+a_health+'HealthSVR.pickle'
+					print('Saving SVR data for '+a_health+' at '+ save_fp)
+					with open(save_fp,'wb') as my_svm_file:
+						pickle.dump({'computed_svm':computed_svm,'independent_variables':health_measures[a_health]},my_svm_file)
+				
 				column_data = np.expand_dims(svr_data, axis = 1)
 				self.extra_data[a_health] = column_data
 				all_physiology.extend(health_measures[a_health])
 			self.add_column(self.extra_data[a_health], -3, a_health)		
 		self.scale_normalized_data()
-
+		
 		# Now do it for the overall health measure.
 		if 'health' not in self.extra_data.keys():
 			print('\t\tComputing overall health measure.', flush = True)
+			if extra_arguments['svm_directory'] is not '':
+				print('Using svm for '+a_health+' from ' + extra_arguments['svm_directory']+os.path.sep+a_health+'HealthSVR.pickle')
+				with open(extra_arguments['svm_directory']+os.path.sep+'overallHealthSVR.pickle','rb') as my_file:
+					my_svm_data = pickle.load(my_file)
+					if any([loaded_ind_var not in all_physiology for loaded_ind_var in my_svm_data['independent_variables']]) or \
+						any([desired_ind_var not in my_svm_data['independent_variables'] for desired_ind_var in all_physiology]):
+							raise BaseException('Trying to use an incompatible SVM for regression')
+					svm_to_use = my_svm_data['computed_svm']
+			else:
+				print('No SVM specified; recomputing SVM')
+				svm_to_use = None
+			
 			self.extra_changed = True
-			(variable_data, svr_data, life_data) = computeStatistics.svr_data(self, all_physiology, dependent_variable = 'ghost_age', SVM_directory=extra_arguments['SVM_directory'], svm_fp_out = extra_arguments['svm_fp_out'][:-5]+'health'+extra_arguments['svm_fp_out'][-5:])
+			(variable_data, svr_data, life_data, computed_svm) = computeStatistics.svr_data(self, all_physiology, dependent_variable = 'ghost_age', svm_to_use =svm_to_use)
+			
+			if extra_arguments['svm_dir_out'] is not '':
+				save_fp = extra_arguments['svm_dir_out']+os.path.sep+'overallHealthSVR.pickle'
+				print('Saving SVR data for overall health at '+ save_fp)
+				with open(save_fp,'wb') as my_svm_file:
+					pickle.dump({'computed_svm':computed_svm,'independent_variables':all_physiology},my_svm_file)
+			
 			column_data = np.expand_dims(svr_data, axis = 1)
 			self.extra_data['health'] = column_data
 		self.add_column(self.extra_data['health'], -3, 'health')
