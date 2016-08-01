@@ -52,7 +52,7 @@ import zplib.image.mask as zplib_image_mask
 import basicOperations.folderStuff as folderStuff
 import basicOperations.imageOperations as imageOperations
 import wormFinding.backgroundSubtraction as backgroundSubtraction   
-import wormFinding.shapeModelFitting as shapeModelFitting
+#import wormFinding.shapeModelFitting as shapeModelFitting
 import wormFinding.textureClassification as textureClassification
 import wormFinding.edgeMorphology as edgeMorphology
 import measurePhysiology.extractFeatures as extractFeatures
@@ -73,7 +73,7 @@ if len(sys.argv) > 1:
 
 # Locations of all the files I need.
 #save_directory = r'C:\Users\Willie\Desktop\save_dir'
-save_directory = r'/mnt/bulkdata/wzhang/human_dir/age-1_health/'
+save_directory = r'/mnt/bulkdata/wzhang/human_dir/spe-9_health/'
 working_directory = r'\\heavenly.wucon.wustl.edu\wzhang\work_dir'
 human_directory = r'\\heavenly.wucon.wustl.edu\wzhang\human_dir'
 #data_directories = [
@@ -201,7 +201,7 @@ annotation_directories = [
     None,                                                                                     #21
     None,                                                                                     #22
 ]
-directory_bolus = folderStuff.DirectoryBolus(working_directory, human_directory, data_directories, extra_directories, experiment_directories, annotation_directories, done = 16, ready = [16,23])    
+directory_bolus = folderStuff.DirectoryBolus(working_directory, human_directory, data_directories, extra_directories, experiment_directories, annotation_directories, done = 16, ready = [0,16])    
 if sys.platform == 'linux':
     human_directory = folderStuff.linux_path(human_directory)
     working_directory = folderStuff.linux_path(working_directory)
@@ -236,6 +236,10 @@ if my_mode == 3:
     #with open('/mnt/bulkdata/wzhang/human_dir/debug_SVRload/df_rerun.pickle','wb') as my_file:
         #pickle.dump({'adult_df':adult_df},my_file)
        
+    #adult_df = characterizeTrajectories.CompleteWormDF(directory_bolus, save_directory, {'adult_only': True, 'svm_directory':'/mnt/bulkdata/wzhang/human_dir/spe-9_health_SVR'})   
+    #with open('/mnt/bulkdata/wzhang/human_dir/age-1_health/df_age-1.pickle','wb') as my_file:
+        #pickle.dump({'adult_df':adult_df},my_file)
+        
     adult_df = characterizeTrajectories.CompleteWormDF(directory_bolus, save_directory, {'adult_only': True, 'svm_directory':'/mnt/bulkdata/wzhang/human_dir/spe-9_health_SVR'})   
-    with open('/mnt/bulkdata/wzhang/human_dir//df_age-1.pickle','wb') as my_file:
+    with open('/mnt/bulkdata/wzhang/human_dir/spe-9_health/df_spe-9.pickle','wb') as my_file:
         pickle.dump({'adult_df':adult_df},my_file)

@@ -428,7 +428,8 @@ def cohort_traces(complete_df, general_parameters = {}, mode_parameters = {}):
 		else:
 			(life_cohorts, bin_lifes, my_bins, my_colors) = selectData.life_cohort_bins(complete_df, my_worms = general_parameters['chosen_worms'], bin_width_days = mode_parameters['bin_width_days'])
 		
-		my_cohorts = [life_cohorts[i] for i in range(0, len(life_cohorts)) if len(life_cohorts[i]) > 0]	
+		my_cohorts = [life_cohorts[i] for i in range(0, len(life_cohorts)) if len(life_cohorts[i]) > 0]
+		print(my_cohorts)
 	# Just plot individuals.
 	elif general_parameters['cohort_mode'] == 'individual':
 		# Set up default values for mode_parameters.		

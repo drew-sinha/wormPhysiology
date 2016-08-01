@@ -225,7 +225,7 @@ def relative_time(adult_df):
 	plotFigures.subfigure_label([deviation_plot, measured_deviation, computed_deviation, rescale_plot, positive_plot, negative_plot, variable_trace, variable_scatter, relative_trace, relative_scatter])
 
 	# Plot the hypotheses.
-	cannedFigures.relative_hypotheses(deviation_plot, measured_deviation, computed_deviation, rescale_plot, negative_plot, positive_plot, adult_df)
+	#cannedFigures.relative_hypotheses(deviation_plot, measured_deviation, computed_deviation, rescale_plot, negative_plot, positive_plot, adult_df)
 	
 	# Make bins of lifespans.
 	(life_cohorts, bin_lifes, my_bins, my_colors) = selectData.adult_cohort_bins(adult_df, my_worms = adult_df.worms, bin_width_days = 2)
