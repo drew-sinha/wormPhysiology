@@ -671,7 +671,8 @@ def show_spans(health_traces, health_traces_normed, health_spans, health_spans_n
 	health_traces_normed.set_ylim([0, my_median*2.0])	
 
 	# Plot my horizontal lines.	
-	xrange = np.linspace(0, 14, 200)
+	max_adultspans = selectData.get_adultspans(adult_df).max()/24
+	xrange = np.linspace(0, max_adultspans, 200)
 	yrange = np.empty(200)
 	yrange[:] = my_cutoff
 	xrange_normed = np.linspace(0, 1, 200)
