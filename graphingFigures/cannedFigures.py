@@ -231,7 +231,8 @@ def survival_lifespan(survival_plot, lifespans_plot, adult_df):
 	survival_plot.set_title('spe-9(hc88) Adult Survival in Corrals')
 	survival_plot.set_aspect('auto')
 	survival_plot.set_ylim([0.0, 1.1])	
-	survival_plot.set_xlim([0, 17])	
+	#survival_plot.set_xlim([0, 17])
+	survival_plot.set_xlim([0,lifespans.max()//1+1])
 	
 	# Plot histogram.
 	bin_width = 2
@@ -241,7 +242,8 @@ def survival_lifespan(survival_plot, lifespans_plot, adult_df):
 
 	# Plot smoothed kde density curve.
 	kde_density = scipy.stats.gaussian_kde(lifespans)
-	my_xrange = np.linspace(0, 17, 200)
+	#my_xrange = np.linspace(0, 17, 200)
+	my_xrange = np.linspace(0, lifespans.max()//1+1, 200)
 	kde_density._compute_covariance()
 	lifespans_plot.plot(my_xrange, kde_density(my_xrange)*len(lifespans)*bin_width, color = 'black', linewidth = 1)	
 	

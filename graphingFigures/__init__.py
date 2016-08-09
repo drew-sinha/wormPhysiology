@@ -1,0 +1,3 @@
+import graphingFigures.cannedFigures
+import graphingFigures.mainFigures
+import graphingFigures.plotFigures
