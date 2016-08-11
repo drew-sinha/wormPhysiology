@@ -77,7 +77,7 @@ def measurements_sketch(my_subfigure, adult_df):
 	plotFigures.remove_box(my_subfigure)
 	return my_subfigure
 
-def cohort_traces(my_subfigure, a_variable, adult_df, the_title = None, the_xlabel = None, the_ylabel = None, x_normed = False, y_normed = False, skip_conversion = False, zero_to_one = False, only_worms = None):
+def cohort_traces(my_subfigure, a_variable, adult_df, the_title = None, the_xlabel = None, the_ylabel = None, x_normed = False, y_normed = False, skip_conversion = False, zero_to_one = False, only_worms = None, make_labels=True):
 	'''
 	Make cohort traces for a_variable.
 	'''
@@ -132,14 +132,14 @@ def cohort_traces(my_subfigure, a_variable, adult_df, the_title = None, the_xlab
 	# Label the subplot.
 	if the_title == None:
 		the_title = fancy_name + ' Over Time'
-	my_subfigure.set_title(the_title)
-	my_subfigure.set_xlabel(the_xlabel)
+	if make_labels: my_subfigure.set_title(the_title)
+	if make_labels: my_subfigure.set_xlabel(the_xlabel)
 	if the_ylabel == None:
 		the_ylabel = my_unit
-	my_subfigure.set_ylabel(the_ylabel)	
+	if make_labels: my_subfigure.set_ylabel(the_ylabel)	
 	return my_subfigure
 
-def cohort_scatters(my_subfigure, xdata, ydata, adult_df, the_title = None, the_xlabel = None, the_ylabel = None, label_coordinates = (0, 0), no_cohorts_color = None, polyfit_degree = 1, only_worms = None):
+def cohort_scatters(my_subfigure, xdata, ydata, adult_df, the_title = None, the_xlabel = None, the_ylabel = None, label_coordinates = (0, 0), no_cohorts_color = None, polyfit_degree = 1, only_worms = None, make_labels=True):
 	'''
 	Make colorful scatterplots by cohort.
 	'''
@@ -163,9 +163,10 @@ def cohort_scatters(my_subfigure, xdata, ydata, adult_df, the_title = None, the_
 		my_subfigure.scatter(xdata[a_cohort], ydata[a_cohort], color = my_colors[i])	
 
 	# Label the plot.
-	my_subfigure.set_title(the_title)
-	my_subfigure.set_xlabel(the_xlabel)
-	my_subfigure.set_ylabel(the_ylabel)	
+	if make_labels:
+		my_subfigure.set_title(the_title)
+		my_subfigure.set_xlabel(the_xlabel)
+		my_subfigure.set_ylabel(the_ylabel)	
 	my_subfigure.set_aspect('auto')
 
 	# Fit a polynomial for a trendline and for r^2.
@@ -196,7 +197,7 @@ def health_sketch(my_subfigure, adult_df):
 	plotFigures.remove_box(my_subfigure)
 	return my_subfigure
 	
-def survival_lifespan(survival_plot, lifespans_plot, adult_df):
+def survival_lifespan(survival_plot, lifespans_plot, adult_df, make_labels=True):
 	'''
 	Make a survival curve and lifespan distribution with my cohorts highlighted.
 	'''
@@ -226,9 +227,9 @@ def survival_lifespan(survival_plot, lifespans_plot, adult_df):
 	survival_plot.plot(life_times[cohort_mins[-1]:], cumulative_life[cohort_mins[-1]:], linewidth = 2, color = my_colors[-1])
 
 	# Label my survival curve.
-	survival_plot.set_ylabel('% Surviving')
-	survival_plot.set_xlabel('Days Post-Maturity')
-	survival_plot.set_title('spe-9(hc88) Adult Survival in Corrals')
+	if make_labels: survival_plot.set_ylabel('% Surviving')
+	if make_labels: survival_plot.set_xlabel('Days Post-Maturity')
+	if make_labels: survival_plot.set_title('spe-9(hc88) Adult Survival in Corrals')
 	survival_plot.set_aspect('auto')
 	survival_plot.set_ylim([0.0, 1.1])	
 	#survival_plot.set_xlim([0, 17])
@@ -248,10 +249,10 @@ def survival_lifespan(survival_plot, lifespans_plot, adult_df):
 	lifespans_plot.plot(my_xrange, kde_density(my_xrange)*len(lifespans)*bin_width, color = 'black', linewidth = 1)	
 	
 	# Label the lifespan distribution.	
-	lifespans_plot.set_ylabel('Number of Worms')
-	lifespans_plot.set_xlabel('Days Post-Maturity')
+	if make_labels: lifespans_plot.set_ylabel('Number of Worms')
+	if make_labels: lifespans_plot.set_xlabel('Days Post-Maturity')
 	lifespans_plot.set_ylim([0, 300])	
-	lifespans_plot.set_title('spe-9(hc88) Adult Lifespans in Corrals')
+	if make_labels: lifespans_plot.set_title('spe-9(hc88) Adult Lifespans in Corrals')
 	return (survival_plot, lifespans_plot)
 	
 def explain_traces(highlight_life, histogram_high, histogram_low, illustrate_traces, adult_df):
@@ -589,7 +590,7 @@ def table_from_dataframe(subfigure_plot, pandas_df):
 	my_table.set_fontsize(14)
 	return subfigure_plot
 
-def show_spans(health_traces, health_traces_normed, health_spans, health_spans_normed, adult_df, relative_time = 0.5, a_var = 'health'):
+def show_spans(health_traces, health_traces_normed, health_spans, health_spans_normed, adult_df, relative_time = 0.5, a_var = 'health',make_labels=True):
 	'''
 	Illustrate how spans work.
 	'''	
@@ -630,10 +631,10 @@ def show_spans(health_traces, health_traces_normed, health_spans, health_spans_n
 			health_traces.plot(cohort_ages[healthy_mask], cohort_data[healthy_mask], color = my_colors[i], linewidth = 2)
 			health_traces.plot(cohort_ages[unhealthy_mask], cohort_data[unhealthy_mask], color = fade_colors[i], linewidth = 2)
 
-	health_traces.set_title(fancy_name + ' Over Time')
-	health_traces.set_ylabel('Prognosis (Remaining Days)')	
-	health_traces.set_xlabel('Age (Days Post-Maturity)')	
-	health_traces.set_ylim([0, my_median*2.0])	
+	if make_labels: health_traces.set_title(fancy_name + ' Over Time')
+	if make_labels: health_traces.set_ylabel('Prognosis (Remaining Days)')	
+	if make_labels: health_traces.set_xlabel('Age (Days Post-Maturity)')	
+	if make_labels: health_traces.set_ylim([0, my_median*2.0])	
 	
 	# Prepare my "start" data for normalization.
 	geometry_dict = computeStatistics.one_d_geometries(adult_df, 'health')
@@ -665,10 +666,10 @@ def show_spans(health_traces, health_traces_normed, health_spans, health_spans_n
 			health_traces_normed.plot(cohort_ages[healthy_mask], cohort_data[healthy_mask], color = my_colors[i], linewidth = 2)
 			health_traces_normed.plot(cohort_ages[unhealthy_mask], cohort_data[unhealthy_mask], color = fade_colors[i], linewidth = 2)
 
-	health_traces_normed.set_title(fancy_name + ' Over Normalized Time')
-	health_traces_normed.set_xlabel('Fractional Adult Lifespan')
-	health_traces_normed.set_ylabel('Prognosis (Remaining Days)')
-	health_traces_normed.set_ylim([0, my_median*2.0])	
+	if make_labels: health_traces_normed.set_title(fancy_name + ' Over Normalized Time')
+	if make_labels: health_traces_normed.set_xlabel('Fractional Adult Lifespan')
+	if make_labels: health_traces_normed.set_ylabel('Prognosis (Remaining Days)')
+	if make_labels: health_traces_normed.set_ylim([0, my_median*2.0])	
 
 	# Plot my horizontal lines.	
 	max_adultspans = selectData.get_adultspans(adult_df).max()/24
@@ -685,18 +686,18 @@ def show_spans(health_traces, health_traces_normed, health_spans, health_spans_n
 	for i in range(0, len(my_cohorts)):
 		health_spans.barh(my_bins[i][0] + 0.1, minimum_life_cohorts[i], color = fade_colors[i], height = 1.8)
 		health_spans.barh(my_bins[i][0] + 0.1, cohort_transitions[i], color = my_colors[i], height = 1.8)
-	health_spans.set_title('Absolute Healthspans')
-	health_spans.set_xlabel('Days of Adult Life')
-	health_spans.set_xlim([0, 14])
-	health_spans.set_ylabel('Adult Lifespan Cohorts')
+	if make_labels: health_spans.set_title('Absolute Healthspans')
+	if make_labels: health_spans.set_xlabel('Days of Adult Life')
+	health_spans.set_xlim([0, max_adultspans])
+	if make_labels: health_spans.set_ylabel('Adult Lifespan Cohorts')
 
 	# Plot relative bars.	
 	for i in range(0, len(my_cohorts)):
 		health_spans_normed.barh(my_bins[i][0] + 0.1, 1, color = fade_colors[i], height = 1.8)
 		health_spans_normed.barh(my_bins[i][0] + 0.1, normed_cohort_transitions[i], color = my_colors[i], height = 1.8)
-	health_spans_normed.set_title('Relative Healthspans')
-	health_spans_normed.set_xlabel('Fractional Adult Lifespan')
-	health_spans_normed.set_ylabel('Adult Lifespan Cohorts')
+	if make_labels: health_spans_normed.set_title('Relative Healthspans')
+	if make_labels: health_spans_normed.set_xlabel('Fractional Adult Lifespan')
+	if make_labels: health_spans_normed.set_ylabel('Adult Lifespan Cohorts')
 	return (health_traces, health_traces_normed, health_spans, health_spans_normed)
 
 def main():
