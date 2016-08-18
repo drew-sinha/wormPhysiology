@@ -267,7 +267,7 @@ def regression_check(complete_df, independent_variables, dependent_variable = 'g
 		return (independent_variables, linear_r, cross_validated_r)
 	return (independent_variables, linear_r)
 
-def multiple_regression_combine(complete_df, independent_variables, dependent_variable = 'ghost_age'):
+def multiple_regression_combine(complete_df, independent_variables, dependent_variable = 'ghost_age', return_reg_data = False):
 	'''
 	Use multiple regression to combine variables into a predictive score.
 	'''
@@ -280,7 +280,10 @@ def multiple_regression_combine(complete_df, independent_variables, dependent_va
 	(predicted_result, repeated_dependent, multiple_regression_weights, my_intercept) = multiple_regression(all_flats, flat_dependent)
 	my_score = np.dot(multiple_regression_weights, np.transpose(all_flats)) + my_intercept
 	my_score = np.reshape(my_score, (len(complete_df.worms), 1, len(complete_df.times)))
-	return (my_score, multiple_regression_weights)
+	if not return_reg_data:
+		return (my_score, multiple_regression_weights)
+	else:
+		return (my_score, multiple_regression_weights, my_intercept, np.reshape(flat_dependent,(len(complete_df.worms),1,len(complete_df.times))))
 
 def cross_validate_pearson(independent_variables, dependent_variable, k_fold = 10):
 	'''
