@@ -213,7 +213,7 @@ def life_cohort_bins(complete_df, my_worms = None, bin_width_days = 2):
 	my_colors = my_colors/255		
 	return (life_cohorts, bin_lifes, my_bins, my_colors)
 
-def adult_cohort_bins(complete_df, my_worms = None, bin_width_days = 2):
+def adult_cohort_bins(complete_df, my_worms = None, bin_width_days = 2, bin_mode = 'day'):
 	'''
 	Compute bins of cohorts of worms.
 	'''
@@ -221,13 +221,29 @@ def adult_cohort_bins(complete_df, my_worms = None, bin_width_days = 2):
 		my_worms = complete_df.worms
 	adultspans = get_adultspans(complete_df)/24
 	max_adultspans = int(np.ceil(np.max(adultspans)))
-	my_bins = [(i*bin_width_days, i*bin_width_days + bin_width_days) for i in range(0, max_adultspans//bin_width_days + 1)]
-	life_cohorts = [[] for a_bin in my_bins]
-	for i in range(0, adultspans.shape[0]):
-		if complete_df.worms[i] in my_worms:
-			my_lifespan = adultspans[i]
-			my_bin = int(my_lifespan//bin_width_days)
-			life_cohorts[my_bin].append(i)
+	if bin_mode is 'day':
+		my_bins = [(i*bin_width_days, i*bin_width_days + bin_width_days) for i in range(0, max_adultspans//bin_width_days + 1)]
+		life_cohorts = [[] for a_bin in my_bins]
+		for i in range(0, adultspans.shape[0]):
+			if complete_df.worms[i] in my_worms:
+				my_lifespan = adultspans[i]
+				my_bin = int(my_lifespan//bin_width_days)
+				life_cohorts[my_bin].append(i)
+	elif bin_mode is 'percentile':
+		bin_widths = bin_width_days.copy()
+		if bin_width_days[-1] is not 100: np.append(bin_widths, 100)
+		percentile_lims = np.percentile(adultspans,bin_widths)
+		percentile_lims = np.append([0],percentile_lims)	# Pad extra 0 for digitize to do its job
+		
+		my_bins = [[left_lim, right_lim] for (left_lim,right_lim) in zip(percentile_lims[:-1],percentile_lims[1:])]
+		life_cohorts = [[] for a_bin in my_bins]
+		for worm_idx, (worm, adultspan) in enumerate(zip(complete_df.worms, adultspans)):
+			if worm in my_worms:
+				bin_idx = np.digitize([adultspan], percentile_lims,right=True)
+				life_cohorts[bin_idx-1].append(worm_idx)	# -1 because of extra padded zero
+	else:
+		raise Exception('bad things happened in adult_cohort bins')
+
 	
 	# Remove empty bins and cohorts.
 	my_bins = [my_bins[i] for i in range(0, len(life_cohorts)) if len(life_cohorts[i]) > 0]	
