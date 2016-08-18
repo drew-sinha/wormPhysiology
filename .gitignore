@@ -2,6 +2,9 @@
 .*
 !/.gitignore
 
+# Ignore pyc files
+*.pyc
+
 # Directory and everything inside with infinite depth
 human_dir/**
 work_dir/**
