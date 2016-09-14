@@ -73,7 +73,7 @@ if len(sys.argv) > 1:
 
 # Locations of all the files I need.
 #save_directory = r'C:\Users\Willie\Desktop\save_dir'
-save_directory = r'/mnt/bulkdata/wzhang/human_dir/spe-9_health/'
+save_directory = r'/mnt/bulkdata/wzhang/human_dir/combined_SVR/'
 working_directory = r'\\heavenly.wucon.wustl.edu\wzhang\work_dir'
 human_directory = r'\\heavenly.wucon.wustl.edu\wzhang\human_dir'
 #data_directories = [
@@ -201,7 +201,7 @@ annotation_directories = [
     None,                                                                                     #21
     None,                                                                                     #22
 ]
-directory_bolus = folderStuff.DirectoryBolus(working_directory, human_directory, data_directories, extra_directories, experiment_directories, annotation_directories, done = 16, ready = [0,16])    
+directory_bolus = folderStuff.DirectoryBolus(working_directory, human_directory, data_directories, extra_directories, experiment_directories, annotation_directories, done = 16, ready = [0,23])    
 if sys.platform == 'linux':
     human_directory = folderStuff.linux_path(human_directory)
     working_directory = folderStuff.linux_path(working_directory)
@@ -240,6 +240,24 @@ if my_mode == 3:
     #with open('/mnt/bulkdata/wzhang/human_dir/age-1_health/df_age-1.pickle','wb') as my_file:
         #pickle.dump({'adult_df':adult_df},my_file)
         
-    adult_df = characterizeTrajectories.CompleteWormDF(directory_bolus, save_directory, {'adult_only': True, 'svm_directory':'/mnt/bulkdata/wzhang/human_dir/spe-9_health_SVR'})   
-    with open('/mnt/bulkdata/wzhang/human_dir/spe-9_health/df_spe-9.pickle','wb') as my_file:
-        pickle.dump({'adult_df':adult_df},my_file)
+    #adult_df = characterizeTrajectories.CompleteWormDF(directory_bolus, save_directory, {'adult_only': True, 'svm_directory':'/mnt/bulkdata/wzhang/human_dir/spe-9_health_SVR'})   
+    #with open('/mnt/bulkdata/wzhang/human_dir/spe-9_health/df_spe-9.pickle','wb') as my_file:
+        #pickle.dump({'adult_df':adult_df},my_file)
+        
+    # Make an SVR for health from age-1 data
+    #adult_df = characterizeTrajectories.CompleteWormDF(directory_bolus, save_directory, {'adult_only': True, 'svm_directory':'/mnt/bulkdata/wzhang/human_dir/age-1_health_SVR_oldhp/'})
+    #with open('/mnt/bulkdata/wzhang/human_dir/spe-9perage-1SVM_health/df_spe-9perage-1SVM_health.pickle','wb') as my_file:
+        #pickle.dump({'adult_df':adult_df},my_file)
+        
+    #adult_df = characterizeTrajectories.CompleteWormDF(directory_bolus, save_directory, {'adult_only': True, 'svm_dir_out':'/mnt/bulkdata/wzhang/human_dir/spe-9age-1combined_health_SVR'})
+    adult_df = characterizeTrajectories.CompleteWormDF(directory_bolus, save_directory, {'adult_only': True, svm_directory:'/media/Data/Work/ZPLab/Heavenly_Backups/adult_df_backups/spe-9age-1combined_health_SVR/'})
+    #with open('/mnt/bulkdata/wzhang/human_dir/spe-9percombinedSVM_health/df_spe-9percombinedSVM_health.pickle','wb') as my_file:
+        #my_worms = [this_worm for this_worm in adult_df.worms if 'age-1' not in this_worm]
+        #spe_df = adult_df.copy()
+        #spe_df.save_directory='/mnt/bulkdata/wzhang/human_dir/spe-9percombinedSVM_health/'
+        #pickle.dump({'adult_df':spe_df.mloc(worms=my_worms)},my_file)
+    #with open('/mnt/bulkdata/wzhang/human_dir/age-1percombinedSVM_health/df_age-1percombinedSVM_health.pickle','wb') as my_file:
+        #my_worms = [this_worm for this_worm in adult_df.worms if 'age-1' in this_worm]
+        #age_df = adult_df.copy()
+        #age_df.save_directory='/mnt/bulkdata/wzhang/human_dir/age-1percombinedSVM_health/'
+        #pickle.dump({'adult_df':age_df.mloc(worms=my_worms)},my_file)
