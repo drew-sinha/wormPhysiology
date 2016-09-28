@@ -51,6 +51,9 @@ class CompleteWormDF():
 		if 'svm_dir_out' not in extra_arguments.keys():
 			extra_arguments['svm_dir_out'] = ''
 			
+		if 'save_extra' not in extra_arguments.keys():
+			extra_arguments['save_extra'] = False
+			
 		# Read in the raw data and set up some basic information.		
 		self.save_directory = save_directory
 		self.key_measures = extra_arguments['key_measures']
@@ -91,7 +94,7 @@ class CompleteWormDF():
 		self.times = [str(a_time//8) + '.' + str(a_time-8*(a_time//8)) for a_time in list(range(0, max_times))]
 		self.time_indices = {self.times[i]:i for i in range(0, len(self.times))}
 		self.ages = [int(a_time.split('.')[0]) + int(a_time.split('.')[1])/8 for a_time in self.times]
-		
+
 		# Fill in my frame with actual data!
 		self.data = np.empty((len(self.worms), max_measurements, max_times))
 		self.data.fill(np.nan)
@@ -109,10 +112,12 @@ class CompleteWormDF():
 
 		# Process the egg counts, smooth trajectories.
 		self.process_eggs()
+
 		if 'total_size' in self.measures:
 			self.adjust_machine_bias(directory_bolus)
 			self.smooth_trajectories(directory_bolus, extra_arguments)	
 			
+		
 		# Do some quick re-scaling.
 		self.time_normalized_data()		
 		self.scale_normalized_data()
@@ -127,7 +132,7 @@ class CompleteWormDF():
 			self.add_healths(extra_arguments)
 
 		# Save out my extra data if it has changed.
-		if self.extra_changed:
+		if self.extra_changed and extra_arguments['save_extra']:
 			self.save_extra(directory_bolus)
 			
 	def load_extra(self, directory_bolus):
@@ -483,10 +488,13 @@ class CompleteWormDF():
 					
 			#** Comment this out since note field was used to filter out worms previously... should be good, right?
 			for a_worm in never_eggs:
-				worm_file = [a_dir for a_dir in health_directories if ' '.join(a_worm.split(' ')[:-2]) + ' Run ' + a_worm.split(' ')[-2] in a_dir][0] + os.path.sep + a_worm.split(' ')[-1] + '.tsv'
-				if worm_file in my_tsvs:
-					print('\tSkipping ' + a_worm + ', it never laid eggs.')
-					my_tsvs.remove(worm_file)		
+				#worm_file = [a_dir for a_dir in health_directories if ' '.join(a_worm.split(' ')[:-2]) + ' Run ' + a_worm.split(' ')[-2] in a_dir][0] + os.path.sep + a_worm.split(' ')[-1] + '.tsv'
+				worm_file = [a_dir for a_dir in health_directories if ' '.join(a_worm.split(' ')[:-2]) + ' Run ' + a_worm.split(' ')[-2] in a_dir]
+				if len(worm_file)>0:
+					worm_file = worm_file[0] + os.path.sep + a_worm.split(' ')[-1] + '.tsv'
+					if worm_file in my_tsvs:
+						print('\tSkipping ' + a_worm + ', it never laid eggs.')
+						my_tsvs.remove(worm_file)		
 
 			worm_frames = {a_file.split(os.path.sep)[-3].replace(' Run ', ' ') + ' ' + a_file.split(os.path.sep)[-1].split('.')[-2]: pd.read_csv(a_file, sep = '\t', index_col = 0) for a_file in my_tsvs}		
 
@@ -563,6 +571,7 @@ class CompleteWormDF():
 		# Actually do the SVM and regression if it's not in my loaded data. Otherwise just add it to the data.
 		all_physiology = []
 		specific_healths = sorted(list(health_measures.keys()))
+		print(extra_arguments['svm_directory'])
 		for a_health in specific_healths:
 			print('\tAdding health measure: ' + a_health + '.', flush = True)
 			if a_health not in self.extra_data.keys():
