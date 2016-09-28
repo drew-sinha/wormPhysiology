@@ -259,6 +259,32 @@ def adult_cohort_bins(complete_df, my_worms = None, bin_width_days = 2, bin_mode
 	my_colors = my_colors/255		
 	return (life_cohorts, bin_lifes, my_bins, my_colors)
 
+def get_cohort_data(adult_df, cohort_assignments,variable_to_get='health', stop_with_death=True, skip_conversion=False):
+    '''
+        Get cohort averaged data from df
+        
+        cohort_assignments - Output from adult_cohort_bins (lists of indices for worms in adult_df corresponding to each cohort)
+        variable_to_get - String corresponding to variable of interest
+        stop_with_death - Flag to indicated whether to suppress information for a cohort past the first death of its member
+        skip_conversion - Flag for converting cohort data to absolute magnitude via display_variables member method
+    '''
+    
+    cohort_data = []
+    cohort_ages = []
+    for a_cohort in cohort_assignments:
+        worm_cohort_data = adult_df.mloc(adult_df.worms, [variable_to_get])[a_cohort, 0,:] # Data for individual worms in cohort
+        worm_cohort_data = worm_cohort_data[~np.isnan(worm_cohort_data).all(axis=1)]
+        if stop_with_death:
+            cohort_data.append(np.mean(worm_cohort_data,axis=0))
+        else:
+            cohort_data.append(np.nanmean(worm_cohort_data,axis=0))
+        if not skip_conversion:
+            (cohort_data[-1], my_unit, fancy_name) = adult_df.display_variables(cohort_data[-1], variable_to_get)
+        cohort_data[-1] = cohort_data[-1][~np.isnan(cohort_data[-1])]
+        #if normalize_var: cohort_data[-1] = (cohort_data[-1]-cohort_data[-1][0])/(cohort_data[-1][-1]-cohort_data[-1][0])
+        cohort_ages.append(adult_df.ages[:cohort_data[-1].shape[0]])
+    return (cohort_data, cohort_ages)
+
 def main():
 	return
 
