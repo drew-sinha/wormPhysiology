@@ -209,9 +209,11 @@ def health_sketch(my_subfigure, adult_df):
 	plotFigures.remove_box(my_subfigure)
 	return my_subfigure
 	
-def survival_lifespan(survival_plot, lifespans_plot, adult_df, make_labels=True):
+def survival_lifespan(survival_plot, lifespans_plot, adult_df, make_labels=True, cohort_info=None):
 	'''
 	Make a survival curve and lifespan distribution with my cohorts highlighted.
+	
+	cohort_info - Packeted tuple/list of information on cohorts (i.e. from selectData.adult_cohort_bins) for plotting cohort data
 	'''
 	# Get lifespan data.	
 	lifespans = selectData.get_adultspans(adult_df)/24
@@ -227,7 +229,10 @@ def survival_lifespan(survival_plot, lifespans_plot, adult_df, make_labels=True)
 	life_times = np.insert(life_times, 0, 0)
 
 	# Figure out where to start each line.
-	(life_cohorts, bin_lifes, my_bins, my_colors) = selectData.adult_cohort_bins(adult_df, my_worms = adult_df.worms, bin_width_days = 2)
+	if cohort_info is None:
+		(life_cohorts, bin_lifes, my_bins, my_colors) = selectData.adult_cohort_bins(adult_df, my_worms = adult_df.worms, bin_width_days = 2)
+	else
+		(life_cohorts, bin_lifes, my_bins, my_colors) = cohort_info
 	cohort_lifes = np.array([lifespans[a_cohort] for a_cohort in life_cohorts])
 	cohort_mins = [np.min(cohort_life) for cohort_life in cohort_lifes]
 	cohort_mins = [np.argmin(np.abs(life_times - cohort_min)) for cohort_min in cohort_mins]	
@@ -602,12 +607,15 @@ def table_from_dataframe(subfigure_plot, pandas_df):
 	my_table.set_fontsize(14)
 	return subfigure_plot
 
-def show_spans(health_traces, health_traces_normed, health_spans, health_spans_normed, adult_df, relative_time = 0.5, a_var = 'health',make_labels=True):
+def show_spans(health_traces, health_traces_normed, health_spans, health_spans_normed, adult_df, relative_time = 0.5, a_var = 'health',make_labels=True,cohort_info=None):
 	'''
 	Illustrate how spans work.
 	'''	
 	# Make bins of lifespans.
-	(life_cohorts, bin_lifes, my_bins, my_colors) = selectData.adult_cohort_bins(adult_df, my_worms = adult_df.worms, bin_width_days = 2)
+	if cohort_info is None:
+		(life_cohorts, bin_lifes, my_bins, my_colors) = selectData.adult_cohort_bins(adult_df, my_worms = adult_df.worms, bin_width_days = 2)
+	else:
+		(life_cohorts, bin_lifes, my_bins, my_colors) = cohort_info
 	fade_colors = my_colors + ((1 - my_colors)/2)
 	my_cohorts = life_cohorts
 
