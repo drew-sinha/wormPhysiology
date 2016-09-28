@@ -231,7 +231,7 @@ def survival_lifespan(survival_plot, lifespans_plot, adult_df, make_labels=True,
 	# Figure out where to start each line.
 	if cohort_info is None:
 		(life_cohorts, bin_lifes, my_bins, my_colors) = selectData.adult_cohort_bins(adult_df, my_worms = adult_df.worms, bin_width_days = 2)
-	else
+	else:
 		(life_cohorts, bin_lifes, my_bins, my_colors) = cohort_info
 	cohort_lifes = np.array([lifespans[a_cohort] for a_cohort in life_cohorts])
 	cohort_mins = [np.min(cohort_life) for cohort_life in cohort_lifes]
