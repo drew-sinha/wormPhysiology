@@ -77,14 +77,22 @@ def measurements_sketch(my_subfigure, adult_df):
 	plotFigures.remove_box(my_subfigure)
 	return my_subfigure
 
-def cohort_traces(my_subfigure, a_variable, adult_df, the_title = None, the_xlabel = None, the_ylabel = None, x_normed = False, y_normed = False, skip_conversion = False, zero_to_one = False, only_worms = None, make_labels=True):
+def cohort_traces(my_subfigure, a_variable, adult_df, the_title = None, the_xlabel = None, the_ylabel = None, x_normed = False, y_normed = False, skip_conversion = False, zero_to_one = False, only_worms = None, make_labels=True, bin_width_days=2,bin_mode='day', line_style='-', cohorts_to_use=[], stop_with_death=True):
 	'''
 	Make cohort traces for a_variable.
 	'''
 	# Make bins of lifespans.
-	(life_cohorts, bin_lifes, my_bins, my_colors) = selectData.adult_cohort_bins(adult_df, my_worms = adult_df.worms, bin_width_days = 2)
+	(life_cohorts, bin_lifes, my_bins, my_colors) = selectData.adult_cohort_bins(adult_df, my_worms = adult_df.worms, bin_width_days = bin_width_days,bin_mode=bin_mode)
+	if len(cohorts_to_use) >0:
+		life_cohorts = [life_cohorts[c_idx] for c_idx in cohorts_to_use]
+		bin_lifes = [bin_lifes[c_idx] for c_idx in cohorts_to_use]
+		my_bins = [my_bins[c_idx] for c_idx in cohorts_to_use]
+		my_colors = [my_colors[c_idx] for c_idx in cohorts_to_use]
+	
+	#print(my_bins)
+	#print([len(cohort) for cohort in life_cohorts])
 
-	# Exclude worms.	
+	# Exclude worms.    
 	if only_worms != None:
 		life_cohorts = [[a_worm for a_worm in a_cohort if a_worm in only_worms] for a_cohort in life_cohorts]
 	else:
@@ -108,8 +116,12 @@ def cohort_traces(my_subfigure, a_variable, adult_df, the_title = None, the_xlab
 			else:
 				cohort_data = a_variable[a_cohort, 0, :]
 				variable_name = 'health'
+			
 			cohort_data = cohort_data[~np.isnan(cohort_data).all(axis = 1)]
-			cohort_data = np.mean(cohort_data, axis = 0)
+			if stop_with_death: # Suppress data after the first individual in a cohort dies
+				cohort_data = np.mean(cohort_data, axis = 0)
+			else:
+				cohort_data = np.nanmean(cohort_data, axis=0)
 			if not skip_conversion:
 				(cohort_data, my_unit, fancy_name) = adult_df.display_variables(cohort_data, variable_name)
 			else:
@@ -123,11 +135,11 @@ def cohort_traces(my_subfigure, a_variable, adult_df, the_title = None, the_xlab
 					cohort_data = cohort_data - cohort_data[-1]
 					cohort_data = cohort_data/cohort_data[0]
 
-			# Figure out the cohort ages.			
-			cohort_ages = adult_df.ages[:cohort_data.shape[0]]			
+			# Figure out the cohort ages.           
+			cohort_ages = adult_df.ages[:cohort_data.shape[0]]          
 			if x_normed:
 				cohort_ages = cohort_ages/np.max(cohort_ages)
-			my_subfigure.plot(cohort_ages, cohort_data, color = my_colors[i], linewidth = 2)
+			my_subfigure.plot(cohort_ages, cohort_data, color = my_colors[i], linewidth = 2, linestyle=line_style)
 
 	# Label the subplot.
 	if the_title == None:
@@ -136,7 +148,7 @@ def cohort_traces(my_subfigure, a_variable, adult_df, the_title = None, the_xlab
 	if make_labels: my_subfigure.set_xlabel(the_xlabel)
 	if the_ylabel == None:
 		the_ylabel = my_unit
-	if make_labels: my_subfigure.set_ylabel(the_ylabel)	
+	if make_labels: my_subfigure.set_ylabel(the_ylabel) 
 	return my_subfigure
 
 def cohort_scatters(my_subfigure, xdata, ydata, adult_df, the_title = None, the_xlabel = None, the_ylabel = None, label_coordinates = (0, 0), no_cohorts_color = None, polyfit_degree = 1, only_worms = None, make_labels=True):
