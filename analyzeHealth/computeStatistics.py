@@ -344,7 +344,7 @@ def predict_life(complete_df, independent_variables = None, dependent_variable =
 
 
 
-def multiple_nonlinear_regression(complete_df, independent_variables, dependent_variable = 'ghost_age', method = 'svm'):
+def multiple_nonlinear_regression(complete_df, independent_variables, dependent_variable = 'ghost_age', method = 'svm',sample_weights=None):
 	'''
 	Return an SVR trained to predict dependent_variable from independent_variables.
 	'''
@@ -355,7 +355,7 @@ def multiple_nonlinear_regression(complete_df, independent_variables, dependent_
 	independent_data  = together_data[:, :-1].copy()
 	dependent_data = together_data[:, -1]
 	measure_svr = sklearn.svm.SVR()
-	measure_svr.fit(independent_data, dependent_data)	
+	measure_svr.fit(independent_data, dependent_data,sample_weights)	
 	return (measure_svr, dependent_data, independent_data)
 
 def quick_multiple_pearson(independent_variables, dependent_variable):
@@ -539,7 +539,7 @@ def cross_validated_health(adult_df, independent_variables = ['autofluorescence'
 	print('Cross-validated r^2 is ', quick_pearson(np.ndarray.flatten(predicted_life), adult_df.flat_data(['ghost_age'])[0]))
 	return predicted_life
 
-def svr_data(complete_df, independent_variables, dependent_variable = 'ghost_age',svm_to_use=None):
+def svr_data(complete_df, independent_variables, dependent_variable = 'ghost_age',svm_to_use=None,sample_weights=None):
 	'''	
 	Compute predicted lifespan remaining for independent_variables using an SVM.
 	'''
@@ -547,7 +547,7 @@ def svr_data(complete_df, independent_variables, dependent_variable = 'ghost_age
 	#if SVM_directory is '':
 	if svm_to_use is None:
 		# Get only non-null values to feed into my SVR.	
-		(my_svm, dependent_data, independent_data) = multiple_nonlinear_regression(complete_df, independent_variables, dependent_variable)
+		(my_svm, dependent_data, independent_data) = multiple_nonlinear_regression(complete_df, independent_variables, dependent_variable,sample_weights)
 	else:
 		# Copied from multiple nonlinear regression
 		independent_data  = np.array([np.ndarray.flatten(complete_df.mloc(measures = [independent_variable])) for independent_variable in independent_variables])
