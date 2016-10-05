@@ -50,8 +50,8 @@ class CompleteWormDF():
 			extra_arguments['svm_directory'] = ''
 		if 'svm_dir_out' not in extra_arguments.keys():
 			extra_arguments['svm_dir_out'] = ''
-        if 'sample_weights' not in extra_arguments.keys():
-            extra_arguments['sample_weights']=None
+		if 'sample_weights' not in extra_arguments.keys():
+			extra_arguments['sample_weights']=None
 			
 		if 'save_extra' not in extra_arguments.keys():
 			extra_arguments['save_extra'] = False
@@ -742,6 +742,45 @@ class CompleteWormDF():
 		else:
 			new_array = an_array
 		return (new_array, my_unit, fancy_name)
+
+def get_worm_names(data_directories):
+	'''
+		Returns full names for worms with measured health over all data_directories (outsourced from CompleteWormDF.read_trajectories
+	'''
+	never_eggs = [
+		'2016.02.26 spe-9 11D 130',
+		'2016.02.26 spe-9 11C 085',
+		'2016.02.29 spe-9 12A 07',
+		'2016.03.25 spe-9 15B 003',
+		'2016.03.25 spe-9 15B 126',
+		'2016.03.25 spe-9 15A 43',
+		'2016.03.04 spe-9 13C 67',
+		'2016.03.31 spe-9 16 154'	
+	]
+	
+	health_directories = [data_directory + os.path.sep + 'measured_health' for data_directory in data_directories]
+	my_tsvs = []
+	for health_directory in health_directories:
+		my_tsvs.extend([health_directory + os.path.sep + a_file for a_file in os.listdir(health_directory) if a_file.split('.')[-1] == 'tsv'])
+
+	# Exclude worms.
+	for a_worm in not_yet_done:
+		if a_worm + '.tsv' in my_tsvs:
+			print('\tSkipping ' + a_worm + ', it is not yet done processing.')
+			my_tsvs.remove(a_worm + '.tsv')
+			
+	#** Comment this out since note field was used to filter out worms previously... should be good, right?
+	for a_worm in never_eggs:
+		#worm_file = [a_dir for a_dir in health_directories if ' '.join(a_worm.split(' ')[:-2]) + ' Run ' + a_worm.split(' ')[-2] in a_dir][0] + os.path.sep + a_worm.split(' ')[-1] + '.tsv'
+		worm_file = [a_dir for a_dir in health_directories if ' '.join(a_worm.split(' ')[:-2]) + ' Run ' + a_worm.split(' ')[-2] in a_dir]
+		if len(worm_file)>0:
+			worm_file = worm_file[0] + os.path.sep + a_worm.split(' ')[-1] + '.tsv'
+			if worm_file in my_tsvs:
+				print('\tSkipping ' + a_worm + ', it never laid eggs.')
+				my_tsvs.remove(worm_file)
+	
+	return [a_file.split(os.path.sep)[-3].replace(' Run ', ' ') + ' ' + a_file.split(os.path.sep)[-1].split('.')[-2] for a_file in my_tsvs]
+
 
 def grid_search_variable(unsmoothed_df, a_variable, life_array, total_tests, measure_count, savgol_parameters, running_mean_parameters, median_parameters):
 	'''
