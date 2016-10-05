@@ -50,6 +50,8 @@ class CompleteWormDF():
 			extra_arguments['svm_directory'] = ''
 		if 'svm_dir_out' not in extra_arguments.keys():
 			extra_arguments['svm_dir_out'] = ''
+        if 'sample_weights' not in extra_arguments.keys():
+            extra_arguments['sample_weights']=None
 			
 		if 'save_extra' not in extra_arguments.keys():
 			extra_arguments['save_extra'] = False
@@ -589,13 +591,13 @@ class CompleteWormDF():
 					print('No SVM specified; recomputing SVM')
 					svm_to_use = None
 				
-				(variable_data, svr_data, life_data, computed_svm) = computeStatistics.svr_data(self, health_measures[a_health], dependent_variable = 'ghost_age', svm_to_use =svm_to_use)
+				(variable_data, svr_data, life_data, computed_svm) = computeStatistics.svr_data(self, health_measures[a_health], dependent_variable = 'ghost_age', svm_to_use =svm_to_use,sample_weights=extra_arguments['sample_weights'])
 				
 				if extra_arguments['svm_dir_out'] is not '':
 					save_fp = extra_arguments['svm_dir_out']+os.path.sep+a_health+'HealthSVR.pickle'
 					print('Saving SVR data for '+a_health+' at '+ save_fp)
 					with open(save_fp,'wb') as my_svm_file:
-						pickle.dump({'computed_svm':computed_svm,'independent_variables':health_measures[a_health]},my_svm_file)
+						pickle.dump({'computed_svm':computed_svm,'independent_variables':health_measures[a_health],'sample_weights':extra_arguments['sample_weights']},my_svm_file)
 				
 				column_data = np.expand_dims(svr_data, axis = 1)
 				self.extra_data[a_health] = column_data
