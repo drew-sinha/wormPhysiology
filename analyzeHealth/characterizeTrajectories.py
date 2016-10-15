@@ -621,13 +621,13 @@ class CompleteWormDF():
 				svm_to_use = None
 			
 			self.extra_changed = True
-			(variable_data, svr_data, life_data, computed_svm) = computeStatistics.svr_data(self, all_physiology, dependent_variable = 'ghost_age', svm_to_use =svm_to_use)
+			(variable_data, svr_data, life_data, computed_svm) = computeStatistics.svr_data(self, all_physiology, dependent_variable = 'ghost_age', svm_to_use =svm_to_use,sample_weights=extra_arguments['sample_weights'])
 			
 			if extra_arguments['svm_dir_out'] is not '':
 				save_fp = extra_arguments['svm_dir_out']+os.path.sep+'overallHealthSVR.pickle'
 				print('Saving SVR data for overall health at '+ save_fp)
 				with open(save_fp,'wb') as my_svm_file:
-					pickle.dump({'computed_svm':computed_svm,'independent_variables':all_physiology},my_svm_file)
+					pickle.dump({'computed_svm':computed_svm,'independent_variables':all_physiology,'sample_weights':extra_arguments['sample_weights']},my_svm_file)
 			
 			column_data = np.expand_dims(svr_data, axis = 1)
 			self.extra_data['health'] = column_data

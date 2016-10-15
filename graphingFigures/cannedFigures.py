@@ -654,7 +654,7 @@ def show_spans(health_traces, health_traces_normed, health_spans, health_spans_n
 	if make_labels: health_traces.set_title(fancy_name + ' Over Time')
 	if make_labels: health_traces.set_ylabel('Prognosis (Remaining Days)')	
 	if make_labels: health_traces.set_xlabel('Age (Days Post-Maturity)')	
-	if make_labels: health_traces.set_ylim([0, my_median*2.0])	
+	health_traces.set_ylim([0, my_median*2.0])	
 	
 	# Prepare my "start" data for normalization.
 	geometry_dict = computeStatistics.one_d_geometries(adult_df, 'health')
@@ -689,7 +689,7 @@ def show_spans(health_traces, health_traces_normed, health_spans, health_spans_n
 	if make_labels: health_traces_normed.set_title(fancy_name + ' Over Normalized Time')
 	if make_labels: health_traces_normed.set_xlabel('Fractional Adult Lifespan')
 	if make_labels: health_traces_normed.set_ylabel('Prognosis (Remaining Days)')
-	if make_labels: health_traces_normed.set_ylim([0, my_median*2.0])	
+	health_traces_normed.set_ylim([0, my_median*2.0])	
 
 	# Plot my horizontal lines.	
 	max_adultspans = selectData.get_adultspans(adult_df).max()/24
