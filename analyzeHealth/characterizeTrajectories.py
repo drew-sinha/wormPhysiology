@@ -762,13 +762,7 @@ def get_worm_names(data_directories):
 	my_tsvs = []
 	for health_directory in health_directories:
 		my_tsvs.extend([health_directory + os.path.sep + a_file for a_file in os.listdir(health_directory) if a_file.split('.')[-1] == 'tsv'])
-
-	# Exclude worms.
-	for a_worm in not_yet_done:
-		if a_worm + '.tsv' in my_tsvs:
-			print('\tSkipping ' + a_worm + ', it is not yet done processing.')
-			my_tsvs.remove(a_worm + '.tsv')
-			
+	
 	#** Comment this out since note field was used to filter out worms previously... should be good, right?
 	for a_worm in never_eggs:
 		#worm_file = [a_dir for a_dir in health_directories if ' '.join(a_worm.split(' ')[:-2]) + ' Run ' + a_worm.split(' ')[-2] in a_dir][0] + os.path.sep + a_worm.split(' ')[-1] + '.tsv'
