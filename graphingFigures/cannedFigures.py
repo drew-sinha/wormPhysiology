@@ -151,7 +151,7 @@ def cohort_traces(my_subfigure, a_variable, adult_df, the_title = None, the_xlab
 	if make_labels: my_subfigure.set_ylabel(the_ylabel) 
 	return my_subfigure
 
-def cohort_scatters(my_subfigure, xdata, ydata, adult_df, the_title = None, the_xlabel = None, the_ylabel = None, label_coordinates = (0, 0), no_cohorts_color = None, polyfit_degree = 1, only_worms = None, make_labels=True,bin_width_days=2,bin_mode='day'):
+def cohort_scatters(my_subfigure, xdata, ydata, adult_df, the_title = None, the_xlabel = None, the_ylabel = None, label_coordinates = (0, 0), no_cohorts_color = None, polyfit_degree = 1, only_worms = None, make_labels=True,bin_width_days=2,bin_mode='day',plot_trenddata=True):
 	'''
 	Make colorful scatterplots by cohort.
 	'''
@@ -188,10 +188,10 @@ def cohort_scatters(my_subfigure, xdata, ydata, adult_df, the_title = None, the_
 	xrange = np.linspace(np.min(xdata), np.max(xdata), 200)
 	my_trendline = np.array([p_array[-i]*xrange**(i-1) for i in range(1, len(p_array)+1)])
 	my_trendline = my_trendline.sum(axis = 0)
-	my_subfigure.plot(xrange, my_trendline, color = 'black')
+	if plot_trenddata: my_subfigure.plot(xrange, my_trendline, color = 'black')
 
 	label_string = '$r^2 = ' + ('%.3f' % computeStatistics.quick_pearson(my_estimator, ydata)) + '$'
-	my_subfigure.annotate(label_string, label_coordinates, textcoords = 'data', size = 10)	
+	if plot_trenddata: my_subfigure.annotate(label_string, label_coordinates, textcoords = 'data', size = 10)	
 	return my_subfigure
 
 def health_sketch(my_subfigure, adult_df):
@@ -607,7 +607,7 @@ def table_from_dataframe(subfigure_plot, pandas_df):
 	my_table.set_fontsize(14)
 	return subfigure_plot
 
-def show_spans(health_traces, health_traces_normed, health_spans, health_spans_normed, adult_df, relative_time = 0.5, a_var = 'health',make_labels=True,cohort_info=None):
+def show_spans(health_traces, health_traces_normed, health_spans, health_spans_normed, adult_df, relative_time = 0.5, a_var = 'health',make_labels=True,cohort_info=None, my_cutoff=None):
 	'''
 	Illustrate how spans work.
 	'''	
@@ -624,9 +624,10 @@ def show_spans(health_traces, health_traces_normed, health_spans, health_spans_n
 	minimum_life_cohorts = []
 	flat_data = np.ndarray.flatten(adult_df.mloc(adult_df.worms, [a_var]))
 	flat_data = flat_data[~np.isnan(flat_data)]
-	my_cutoff = np.percentile(flat_data, (relative_time)*100)
+	if my_cutoff is None:
+		my_cutoff = np.percentile(flat_data, (relative_time)*100)
+		my_cutoff = adult_df.display_variables(my_cutoff, a_var)[0]
 	my_median = np.median(flat_data)
-	my_cutoff = adult_df.display_variables(my_cutoff, a_var)[0]
 	my_median = adult_df.display_variables(my_median, a_var)[0]
 	for i in range(0, len(my_cohorts)):
 		if len(my_cohorts[i]) > 0:
