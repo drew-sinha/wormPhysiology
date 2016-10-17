@@ -347,15 +347,29 @@ def predict_life(complete_df, independent_variables = None, dependent_variable =
 def multiple_nonlinear_regression(complete_df, independent_variables, dependent_variable = 'ghost_age', method = 'svm',sample_weights=None):
 	'''
 	Return an SVR trained to predict dependent_variable from independent_variables.
+	
+	sample_weights - (num_worms,) vector describing how to weight data from each worm
 	'''
 	independent_data  = np.array([np.ndarray.flatten(complete_df.mloc(measures = [independent_variable])) for independent_variable in independent_variables])
 	dependent_data = np.ndarray.flatten(complete_df.mloc(measures = [dependent_variable]))
-	together_data = np.vstack((independent_data, dependent_data)).transpose()
-	together_data = together_data[~np.isnan(together_data).any(axis = 1)]
-	independent_data  = together_data[:, :-1].copy()
-	dependent_data = together_data[:, -1]
+	if sample_weights is None:
+		print('No sample_weights provided')
+		together_data = np.vstack((independent_data, dependent_data)).transpose()
+		together_data = together_data[~np.isnan(together_data).any(axis = 1)]
+		independent_data  = together_data[:, :-1].copy()
+		dependent_data = together_data[:, -1]
+	else:
+		print('Using customized sample_weights')
+		SVR_weights = np.tile(np.array([[sample_weights]]).transpose([2,0,1]),[1,1,complete_df.mloc(measures = [dependent_variable]).shape[2]])
+		SVR_weights = np.ndarray.flatten(SVR_weights)
+		together_data = np.vstack((independent_data, dependent_data,SVR_weights)).transpose()
+		together_data = together_data[~np.isnan(together_data).any(axis = 1)]
+		independent_data  = together_data[:, :-2].copy()
+		dependent_data = together_data[:, -2].copy()
+		SVR_weights = together_data[:,-1].copy()
+
 	measure_svr = sklearn.svm.SVR()
-	measure_svr.fit(independent_data, dependent_data,sample_weights)	
+	measure_svr.fit(independent_data, dependent_data,SVR_weights)	
 	return (measure_svr, dependent_data, independent_data)
 
 def quick_multiple_pearson(independent_variables, dependent_variable):
@@ -547,7 +561,7 @@ def svr_data(complete_df, independent_variables, dependent_variable = 'ghost_age
 	#if SVM_directory is '':
 	if svm_to_use is None:
 		# Get only non-null values to feed into my SVR.	
-		(my_svm, dependent_data, independent_data) = multiple_nonlinear_regression(complete_df, independent_variables, dependent_variable,sample_weights)
+		(my_svm, dependent_data, independent_data) = multiple_nonlinear_regression(complete_df, independent_variables, dependent_variable,sample_weights=sample_weights)
 	else:
 		# Copied from multiple nonlinear regression
 		independent_data  = np.array([np.ndarray.flatten(complete_df.mloc(measures = [independent_variable])) for independent_variable in independent_variables])
