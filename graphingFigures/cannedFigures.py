@@ -151,13 +151,13 @@ def cohort_traces(my_subfigure, a_variable, adult_df, the_title = None, the_xlab
 	if make_labels: my_subfigure.set_ylabel(the_ylabel) 
 	return my_subfigure
 
-def cohort_scatters(my_subfigure, xdata, ydata, adult_df, the_title = None, the_xlabel = None, the_ylabel = None, label_coordinates = (0, 0), no_cohorts_color = None, polyfit_degree = 1, only_worms = None, make_labels=True):
+def cohort_scatters(my_subfigure, xdata, ydata, adult_df, the_title = None, the_xlabel = None, the_ylabel = None, label_coordinates = (0, 0), no_cohorts_color = None, polyfit_degree = 1, only_worms = None, make_labels=True,bin_width_days=2,bin_mode='day'):
 	'''
 	Make colorful scatterplots by cohort.
 	'''
 	# Set up some needed data.
 	if no_cohorts_color == None:
-		(life_cohorts, bin_lifes, my_bins, my_colors) = selectData.adult_cohort_bins(adult_df, my_worms = adult_df.worms, bin_width_days = 2)	
+		(life_cohorts, bin_lifes, my_bins, my_colors) = selectData.adult_cohort_bins(adult_df, my_worms = adult_df.worms, bin_width_days = bin_width_days,bin_mode=bin_mode)	
 	else:
 		life_cohorts = [list(range(xdata.shape[0]))]
 		my_colors = [no_cohorts_color]
