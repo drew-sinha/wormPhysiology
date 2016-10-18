@@ -238,7 +238,8 @@ def survival_lifespan(survival_plot, lifespans_plot, adult_df, make_labels=True,
 	cohort_mins = [np.argmin(np.abs(life_times - cohort_min)) for cohort_min in cohort_mins]	
 	
 	# Plot the actual curve.	
-	survival_plot.plot(life_times[:cohort_mins[0] + 1], cumulative_life[:cohort_mins[0] + 1], linewidth = 2, color = 'black')
+	#survival_plot.plot(life_times[:cohort_mins[0] + 1], cumulative_life[:cohort_mins[0] + 1], linewidth = 2, color = 'black')
+	survival_plot.plot(life_times[:cohort_mins[0] + 1], cumulative_life[:cohort_mins[0] + 1], linewidth = 2, color = my_colors[0])
 	for i in range(0, len(cohort_mins) - 1):
 		survival_plot.plot(life_times[cohort_mins[i]: cohort_mins[i+1] + 1], cumulative_life[cohort_mins[i]: cohort_mins[i+1] + 1], linewidth = 2, color = my_colors[i])
 	survival_plot.plot(life_times[cohort_mins[-1]:], cumulative_life[cohort_mins[-1]:], linewidth = 2, color = my_colors[-1])
