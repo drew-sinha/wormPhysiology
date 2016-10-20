@@ -257,7 +257,7 @@ def adult_cohort_bins(complete_df, my_worms = None, bin_width_days = 2, bin_mode
 	# Color code the bins.
 	my_colors = zplib_image_colorize.color_map(bin_lifes/np.max(bin_lifes[~np.isnan(bin_lifes)]))
 	my_colors = my_colors/255		
-	return (life_cohorts, bin_lifes, my_bins, my_colors)
+	return [life_cohorts, bin_lifes, my_bins, my_colors]
 
 def get_cohort_data(adult_df, cohort_assignments,variable_to_get='health', stop_with_death=True, skip_conversion=False):
     '''
