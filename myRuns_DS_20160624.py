@@ -73,9 +73,11 @@ if len(sys.argv) > 1:
 
 # Locations of all the files I need.
 #save_directory = r'C:\Users\Willie\Desktop\save_dir'
-save_directory = r'/mnt/bulkdata/wzhang/human_dir/combined_SVR/'
-working_directory = r'\\heavenly.wucon.wustl.edu\wzhang\work_dir'
-human_directory = r'\\heavenly.wucon.wustl.edu\wzhang\human_dir'
+save_directory = r'/media/Data/Work/ZPLab/Analysis/MutantHealth/worm_health_data/age-1percombinedweightedSVM_health/'
+#working_directory = r'\\heavenly.wucon.wustl.edu\wzhang\work_dir'
+working_directory = r'/media/Data/Work/ZPLab/Analysis/MutantHealth/worm_health_data/work_dir/'
+#human_directory = r'\\heavenly.wucon.wustl.edu\wzhang\human_dir'
+human_directory = r'/media/Data/Work/ZPLab/Analysis/MutantHealth/worm_health_data/utilities/'
 #data_directories = [
     #r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.16 spe-9 Run 9',      #0
     #r'\\zpl-iscope.wucon.wustl.edu\iscopearray\Zhang_William\2016.02.20 spe-9 Run 10A',    #1
@@ -125,20 +127,21 @@ data_directories = [
     r'\\mnt\scopearray\ZhangWillie\2016.05.02 spe-9 age-1 osxi346 Run 17E', #20
     r'\\mnt\scopearray\ZhangWillie\2016.05.12 spe-9 age-1 Run 18B',   #21
     r'\\mnt\scopearray\ZhangWillie\2016.05.24 spe-9 age-1 Run 24A',  #22 7 worms alive as of 20160624
+    r'\\mnt\scopearray\ZhangWillie\2016.07.01 spe-9 age-1 Run 21',  #23
 ]
 extra_directories = [
-    {'W': r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.02.16 spe-9 Run 9'},      #0
+    {'W': r'\\mnt\scopearray\ZhangWillie\2016.02.16 spe-9 Run 9'},      #0
     None,                                                                                     #1
     None,                                                                                     #2
     None,                                                                                     #3
     None,                                                                                     #4
     None,                                                                                     #5
     None,                                                                                     #6
-    {'W': r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.02.29 spe-9 Run 12A'},    #7
-    {'W': r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.02.29 spe-9 Run 12B'},    #8
+    {'W': r'\\mnt\scopearray\ZhangWillie\2016.02.29 spe-9 Run 12A'},    #7
+    {'W': r'\\mnt\scopearray\ZhangWillie\2016.02.29 spe-9 Run 12B'},    #8
     None,                                                                                     #9
-    {'W': r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.03.04 spe-9 Run 13B'},    #10
-    {'W': r'\\zpl-scope.wucon.wustl.edu\scopearray\ZhangWillie\2016.03.04 spe-9 Run 13C'},    #11
+    {'W': r'\\mnt\scopearray\ZhangWillie\2016.03.04 spe-9 Run 13B'},    #10
+    {'W': r'\\mnt\scopearray\ZhangWillie\2016.03.04 spe-9 Run 13C'},    #11
     None,                                                                                     #12
     None,                                                                                     #13
     None,                                                                                     #14
@@ -150,6 +153,7 @@ extra_directories = [
     None,                                                                                     #20
     None,                                                                                     #21
     None,                                                                                     #22
+    None,                                                                                     #23
 ]
 experiment_directories = [
     'W',                                                                                      #0
@@ -175,20 +179,21 @@ experiment_directories = [
     None,                                                                                     #20
     None,                                                                                     #21
     None,                                                                                     #22
+    None,                                                                                     #23
 ]
 annotation_directories = [
-    r'\\zpl-scope.wucon.wustl.edu\scopearray\Sinha_Drew\20160216_spe9Acquisition',            #0
+    r'\\mnt\scopearray\Sinha_Drew\20160216_spe9Acquisition',            #0
     None,                                                                                     #1
     None,                                                                                     #2
     None,                                                                                     #3
     None,                                                                                     #4
     None,                                                                                     #5
     None,                                                                                     #6
-    r'\\zpl-scope.wucon.wustl.edu\scopearray\Sinha_Drew\20160229_spe9Acquisition_DevVarA',    #7
-    r'\\zpl-scope.wucon.wustl.edu\scopearray\Sinha_Drew\20160229_spe9Acquisition_DevVarB',    #8
+    r'\\mnt\scopearray\Sinha_Drew\20160229_spe9Acquisition_DevVarA',    #7
+    r'\\mnt\scopearray\Sinha_Drew\20160229_spe9Acquisition_DevVarB',    #8
     None,                                                                                     #9
-    r'\\zpl-scope.wucon.wustl.edu\scopearray\Sinha_Drew\20160304_spe9Acquisition_DevVarB',    #10
-    r'\\zpl-scope.wucon.wustl.edu\scopearray\Sinha_Drew\20160304_spe9Acquisition_DevVarC',    #11
+    r'\\mnt\scopearray\Sinha_Drew\20160304_spe9Acquisition_DevVarB',    #10
+    r'\\mnt\scopearray\Sinha_Drew\20160304_spe9Acquisition_DevVarC',    #11
     None,                                                                                     #12
     None,                                                                                     #13
     None,                                                                                     #14
@@ -200,8 +205,10 @@ annotation_directories = [
     None,                                                                                     #20
     None,                                                                                     #21
     None,                                                                                     #22
+    None,                                                                                     #23
 ]
-directory_bolus = folderStuff.DirectoryBolus(working_directory, human_directory, data_directories, extra_directories, experiment_directories, annotation_directories, done = 16, ready = [0,23])    
+#directory_bolus = folderStuff.DirectoryBolus(working_directory, human_directory, data_directories, extra_directories, experiment_directories, annotation_directories, done = 16, ready = [16,23])    
+directory_bolus = folderStuff.DirectoryBolus(working_directory, human_directory, data_directories, extra_directories, experiment_directories, annotation_directories, done = 23, ready = 24)    
 if sys.platform == 'linux':
     human_directory = folderStuff.linux_path(human_directory)
     working_directory = folderStuff.linux_path(working_directory)
@@ -213,13 +220,14 @@ if my_mode == 1:
 
 # Do the image analysis on heavenly/debug it.
 if my_mode == 2:
+    start_time = time.time()
     organizeData.measure_experiments(
         # Directory information.
         directory_bolus,
 
         # Parameters for broken down runs for debugging.
-        parallel = True, 
-        only_worm = None,#'/mnt/scopearray/ZhangWillie/2016.05.24 spe-9 age-1 Run 24A/04', 
+        parallel = False, #True
+        only_worm = '/mnt/scopearray/ZhangWillie/2016.07.01 spe-9 age-1 Run 21/00', #None,#'/mnt/scopearray/ZhangWillie/2016.05.24 spe-9 age-1 Run 24A/04', 
         only_time = None,
         #parallel = False, 
 #       only_worm = directory_bolus.data_directories[15] + os.path.sep + '132', 
@@ -228,6 +236,7 @@ if my_mode == 2:
         # Metadata information.
         refresh_metadata = True
     )
+    print('Ran processing for {:.1f} s'.format(time.time()-start_time))
 
 # Do the analysis.
 if my_mode == 3: 
@@ -250,14 +259,41 @@ if my_mode == 3:
         #pickle.dump({'adult_df':adult_df},my_file)
         
     #adult_df = characterizeTrajectories.CompleteWormDF(directory_bolus, save_directory, {'adult_only': True, 'svm_dir_out':'/mnt/bulkdata/wzhang/human_dir/spe-9age-1combined_health_SVR'})
-    adult_df = characterizeTrajectories.CompleteWormDF(directory_bolus, save_directory, {'adult_only': True, svm_directory:'/media/Data/Work/ZPLab/Heavenly_Backups/adult_df_backups/spe-9age-1combined_health_SVR/'})
-    #with open('/mnt/bulkdata/wzhang/human_dir/spe-9percombinedSVM_health/df_spe-9percombinedSVM_health.pickle','wb') as my_file:
-        #my_worms = [this_worm for this_worm in adult_df.worms if 'age-1' not in this_worm]
-        #spe_df = adult_df.copy()
-        #spe_df.save_directory='/mnt/bulkdata/wzhang/human_dir/spe-9percombinedSVM_health/'
-        #pickle.dump({'adult_df':spe_df.mloc(worms=my_worms)},my_file)
-    #with open('/mnt/bulkdata/wzhang/human_dir/age-1percombinedSVM_health/df_age-1percombinedSVM_health.pickle','wb') as my_file:
-        #my_worms = [this_worm for this_worm in adult_df.worms if 'age-1' in this_worm]
-        #age_df = adult_df.copy()
-        #age_df.save_directory='/mnt/bulkdata/wzhang/human_dir/age-1percombinedSVM_health/'
-        #pickle.dump({'adult_df':age_df.mloc(worms=my_worms)},my_file)
+    
+    #adult_df = characterizeTrajectories.CompleteWormDF(directory_bolus, save_directory, {'adult_only': True, 'svm_directory':'/media/Data/Work/ZPLab/Analysis/MutantHealth/worm_health_data/utilities/spe-9age-1combined_health_SVR/'})
+    #with open('/media/Data/Work/ZPLab/Analysis/MutantHealth/worm_health_data/combined_speage_SVM_data/df_combined_speage_SVM_data.pickle','wb') as my_file:
+        #pickle.dump({'adult_df':adult_df},my_file)
+
+    #adult_df = characterizeTrajectories.CompleteWormDF(directory_bolus, save_directory, {'adult_only': True, 'svm_directory':'/media/Data/Work/ZPLab/Analysis/MutantHealth/worm_health_data/utilities/spe-9age-1combined_health_SVR/'})
+    #with open('/media/Data/Work/ZPLab/Analysis/MutantHealth/worm_health_data/spe-9percombinedSVM_health/df_spe-9percombinedSVM_health.pickle','wb') as my_file:
+        #pickle.dump({'adult_df':adult_df},my_file)
+        
+    #adult_df = characterizeTrajectories.CompleteWormDF(directory_bolus, save_directory, {'adult_only': True, 'svm_directory':'/media/Data/Work/ZPLab/Analysis/MutantHealth/worm_health_data/utilities/spe-9age-1combined_health_SVR/'})
+    #with open('/media/Data/Work/ZPLab/Analysis/MutantHealth/worm_health_data/age-1percombinedSVM_health/df_age-1percombinedSVM_health.pickle','wb') as my_file:
+        #pickle.dump({'adult_df':adult_df},my_file)
+
+    # For building combined SVR
+    ## Build sample weights specified measured_healths
+    #worm_names = characterizeTrajectories.get_worm_names(
+        #directory_bolus.data_directories[directory_bolus.ready[0]:directory_bolus.ready[1]] if type(directory_bolus.ready) is list else directory_bolus.data_directories[:directory_bolus.ready])
+    #worm_types = ['age-1']
+    ##spe-9 labeled with a zero; mutants labeled by position in worm_types+1
+    #worm_labels = np.array([mutant_num+1 if mutant_type in a_worm else 0 for a_worm in worm_names for mutant_num,mutant_type in enumerate(worm_types)])
+    #worm_pop_sizes = np.array([np.count_nonzero(worm_labels == label_num) for label_num in np.arange(len(worm_types)+1)])
+    #print(worm_pop_sizes)
+    
+    #sample_weights = np.array(
+        #[worm_pop_sizes[0]/worm_pop_sizes[worm_label] for worm_label in worm_labels])
+    
+    #adult_df = characterizeTrajectories.CompleteWormDF(directory_bolus, save_directory, 
+        #{'adult_only': True, 'svm_dir_out':'/media/Data/Work/ZPLab/Analysis/MutantHealth/worm_health_data/utilities/spe-9age-1combined_weighted_health_SVR/', 'sample_weights':sample_weights})
+    #adult_df = characterizeTrajectories.CompleteWormDF(directory_bolus, save_directory, 
+        #{'adult_only': True, 'sample_weights':sample_weights})
+    #with open('/media/Data/Work/ZPLab/Analysis/MutantHealth/worm_health_data/spe-9age-1percombinedweightedSVM_health/df_spe-9age-1percombinedweightedSVM_health.pickle','wb') as my_file:
+        #pickle.dump({'adult_df':adult_df,'sample_weights':sample_weights},my_file)
+    
+    svm_directory='/media/Data/Work/ZPLab/Analysis/MutantHealth/worm_health_data/utilities/spe-9age-1combined_weighted_health_SVR/'
+    adult_df = characterizeTrajectories.CompleteWormDF(directory_bolus, save_directory, 
+        {'adult_only': True, 'svm_directory':svm_directory})
+    with open('/media/Data/Work/ZPLab/Analysis/MutantHealth/worm_health_data/age-1percombinedweightedSVM_health/df_age-1percombinedweightedSVM_health.pickle','wb') as my_file:
+        pickle.dump({'adult_df':adult_df,'svm_directory':svm_directory},my_file)
