@@ -7,6 +7,7 @@ Created on Thu May 26 12:08:05 2016
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches
 import scipy.stats
 
 import analyzeHealth.selectData as selectData
@@ -608,7 +609,7 @@ def table_from_dataframe(subfigure_plot, pandas_df):
 	my_table.set_fontsize(14)
 	return subfigure_plot
 
-def show_spans(health_traces, health_traces_normed, health_spans, health_spans_normed, adult_df, relative_time = 0.5, a_var = 'health',make_labels=True,cohort_info=None, my_cutoff=None,bar_plot_mode='original'):
+def show_spans(health_traces, health_traces_normed, health_spans, health_spans_normed, adult_df, relative_time = 0.5, a_var = 'health',make_labels=True,cohort_info=None, my_cutoff=None,bar_plot_mode='original',stop_with_death=True):
 	'''
 	Illustrate how spans work.
 	'''	
@@ -635,7 +636,10 @@ def show_spans(health_traces, health_traces_normed, health_spans, health_spans_n
 			a_cohort = my_cohorts[i]
 			cohort_data = adult_df.mloc(adult_df.worms, [a_var])[a_cohort, 0, :]
 			cohort_data = cohort_data[~np.isnan(cohort_data).all(axis = 1)]
-			cohort_data = np.mean(cohort_data, axis = 0)
+			if not stop_with_death:
+				cohort_data = np.nanmean(cohort_data,axis=0)
+			else:
+				cohort_data = np.mean(cohort_data, axis = 0)
 			(cohort_data, my_unit, fancy_name) = adult_df.display_variables(cohort_data, a_var)
 			cohort_ages = np.array(adult_df.ages[:cohort_data.shape[0]])			
 
@@ -668,7 +672,10 @@ def show_spans(health_traces, health_traces_normed, health_spans, health_spans_n
 		if len(my_cohorts[i]) > 0:
 			a_cohort = my_cohorts[i]
 			cohort_data = adult_df.mloc(adult_df.worms, [a_var])[a_cohort, 0, :]
-			cohort_data = np.mean(cohort_data, axis = 0)
+			if not stop_with_death:
+				cohort_data = np.nanmean(cohort_data,axis=0)
+			else:
+				cohort_data = np.mean(cohort_data, axis = 0)
 			cohort_data = cohort_data[~np.isnan(cohort_data)]
 			(cohort_data, my_unit, fancy_name) = adult_df.display_variables(cohort_data, a_var)
 			cohort_data = cohort_data
@@ -705,6 +712,7 @@ def show_spans(health_traces, health_traces_normed, health_spans, health_spans_n
 	health_traces_normed.plot(xrange_normed, yrange_normed, color = 'black', linestyle = '--')
 
 	# Plot bars.
+	offset = len([my_obj for my_obj in health_spans.get_children() if type(my_obj) is matplotlib.patches.Rectangle][:-1])/2
 	for i in range(0, len(my_cohorts)):
 		if bar_plot_mode is 'original':
 			health_spans.barh(my_bins[i][0] + 0.1, minimum_life_cohorts[i], color = fade_colors[i], height = 1.8)
@@ -712,21 +720,23 @@ def show_spans(health_traces, health_traces_normed, health_spans, health_spans_n
 		#health_spans.barh(my_bins[i][0] + 0.1, minimum_life_cohorts[i], color = fade_colors[i], height = 0.9*(my_bins[i][1]-my_bins[i][0]))
 		#health_spans.barh(my_bins[i][0] + 0.1, cohort_transitions[i], color = my_colors[i], height = 0.9*(my_bins[i][1]-my_bins[i][0]))
 		elif bar_plot_mode is 'uniform':
-			health_spans.barh(2*i, minimum_life_cohorts[i], color = fade_colors[i], height =2)
-			health_spans.barh(2*i, cohort_transitions[i], color = my_colors[i], height = 2)
+			health_spans.barh(2*(i+offset), minimum_life_cohorts[i], color = fade_colors[i], height =2)
+			health_spans.barh(2*(i+offset), cohort_transitions[i], color = my_colors[i], height = 2)
 	if make_labels: health_spans.set_title('Absolute Healthspans')
 	if make_labels: health_spans.set_xlabel('Days of Adult Life')
 	health_spans.set_xlim([0, max_adultspans])
 	if make_labels: health_spans.set_ylabel('Adult Lifespan Cohorts')
 
 	# Plot relative bars.	
+	offset = len([my_obj for my_obj in health_spans_normed.get_children() if type(my_obj) is matplotlib.patches.Rectangle][:-1])/2
+	print(offset)
 	for i in range(0, len(my_cohorts)):
 		if bar_plot_mode is 'original':
 			health_spans_normed.barh(my_bins[i][0] + 0.1, 1, color = fade_colors[i], height = 1.8)
 			health_spans_normed.barh(my_bins[i][0] + 0.1, normed_cohort_transitions[i], color = my_colors[i], height = 1.8)
 		elif bar_plot_mode is 'uniform':
-			health_spans_normed.barh(2*i, 1, color = fade_colors[i], height = 2)
-			health_spans_normed.barh(2*i, normed_cohort_transitions[i], color = my_colors[i], height = 2)
+			health_spans_normed.barh(2*(i+offset), 1, color = fade_colors[i], height = 2)
+			health_spans_normed.barh(2*(i+offset), normed_cohort_transitions[i], color = my_colors[i], height = 2)
 	if make_labels: health_spans_normed.set_title('Relative Healthspans')
 	if make_labels: health_spans_normed.set_xlabel('Fractional Adult Lifespan')
 	if make_labels: health_spans_normed.set_ylabel('Adult Lifespan Cohorts')
