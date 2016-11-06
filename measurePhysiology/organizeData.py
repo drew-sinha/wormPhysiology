@@ -87,12 +87,12 @@ class BaseMeasurer():
 		print(print_prefix + '\tTrained all the SVMs that we\'ll use!', flush = True)	
 		
 		# Make great lawns.
-		for worm_subdir in self.worm_dirs:
-			if not os.path.isfile(worm_subdir + os.path.sep + 'great_lawn.png'):
-				self.t0 = time.time()
-				edgeMorphology.make_mega_lawn(worm_subdir, self.super_vignette.copy())
-				print('Made great lawn for ' + str(worm_subdir) + ', took ' +  str(time.time()-self.t0)[:5] + ' seconds.', flush = True)
-		print(print_prefix + '\tEnsured all the great lawns that we\'ll use!', flush = True)
+		#for worm_subdir in self.worm_dirs:
+			#if not os.path.isfile(worm_subdir + os.path.sep + 'great_lawn.png'):
+				#self.t0 = time.time()
+				#edgeMorphology.make_mega_lawn(worm_subdir, self.super_vignette.copy())
+				#print('Made great lawn for ' + str(worm_subdir) + ', took ' +  str(time.time()-self.t0)[:5] + ' seconds.', flush = True)
+		#print(print_prefix + '\tEnsured all the great lawns that we\'ll use!', flush = True)
 
 	def make_super_vignette(self):
 		'''
@@ -191,11 +191,24 @@ class WormMeasurer(BaseMeasurer):
 	def __init__(self, worm_subdirectory, working_directory, validated_directory):
 		print('Measuring the worm recorded in ' + worm_subdirectory + '...', flush = True)		
 		super().__init__(str(pathlib.Path(worm_subdirectory).parent), working_directory, validated_directory, print_prefix = '\t')
+		#for worm_subdir in self.worm_dirs:
+			#if not os.path.isfile(worm_subdir + os.path.sep + 'great_lawn.png'):
+				#self.t0 = time.time()
+				#edgeMorphology.make_mega_lawn(worm_subdir, self.super_vignette.copy())
+				#print('Made great lawn for ' + str(worm_subdir) + ', took ' +  str(time.time()-self.t0)[:5] + ' seconds.', flush = True)
+		#print(print_prefix + '\tEnsured all the great lawns that we\'ll use!', flush = True)
+		if not os.path.isfile(worm_subdirectory+os.path.sep+'great_lawn.png'):
+			t0 = time.time()
+			edgeMorphology.make_mega_lawn(worm_subdirectory, self.super_vignette.copy())
+			print('Made great lawn for ' + str(worm_subdirectory) + ', took ' +  str(time.time()-t0)[:5] + ' seconds.', flush = True)
 		self.worm_times = [a_time for a_time in self.timepoints if os.path.isfile(worm_subdirectory + os.path.sep + a_time + ' ' + 'bf.png')]
 		self.temporal_radius = 10
 		self.worm_subdirectory = worm_subdirectory	
+		print(self.worm_subdirectory)
 		self.worm_name = self.worm_subdirectory.replace(self.experiment_directory + os.path.sep, '')
 		experiment_name = self.worm_subdirectory.split(os.path.sep)[-2].replace(' Run ', ' ')
+		print(experiment_name)
+		print(self.worm_name)
 		self.write_directory = self.working_directory + os.path.sep + experiment_name + ' ' + self.worm_name
 		folderStuff.ensure_folder(self.write_directory)
 		self.full_worm_name = experiment_name + ' ' + self.worm_name
@@ -1110,8 +1123,8 @@ class HumanCheckpoints():
 		
 		all_times = []
 		for a_worm in list(complete_df.raw.keys()):
-		    my_times = list(complete_df.raw[a_worm][(complete_df.raw[a_worm].loc[:, 'egg_age'] >= 0) & (complete_df.raw[a_worm].loc[:, 'ghost_age'] <= 0)].index)
-		    all_times.extend([a_worm + os.path.sep + my_time for my_time in my_times])
+			my_times = list(complete_df.raw[a_worm][(complete_df.raw[a_worm].loc[:, 'egg_age'] >= 0) & (complete_df.raw[a_worm].loc[:, 'ghost_age'] <= 0)].index)
+			all_times.extend([a_worm + os.path.sep + my_time for my_time in my_times])
 		egg_counts = sorted(list(set(list(np.random.choice(all_times, 150, replace = False)))))
 		
 		age_bins = [(i, i+72) for i in np.array(list(range(10)))*72]
@@ -1168,7 +1181,9 @@ class HumanCheckpoints():
 			my_prefix = experiment_directory
 			experiment_directory = self.more_directories[experiment_directory]
 		
+		print ('DS configured experiment directory')
 		# Figure out a list of wells to skip acquisitions on.
+		print(self.bad_worms)
 		skip_list = list(self.bad_worms)
 		skip_list.extend(self.dead_worms)
 		skip_string = str(sorted(skip_list)).replace('\'', '\"')
@@ -1185,6 +1200,7 @@ class HumanCheckpoints():
 			raise BaseException('The worms are not partitioned properly. They don\'t add up.')
 		
 		# Save out our metadata.
+		print('DS clean_experiment_directory saving metadata')
 		self.record_from_frame(self.latest_annotations)
 		self.save_checkpoints(my_prefix)
 		self.move_dead(my_prefix)
@@ -1287,6 +1303,7 @@ def measure_experiments(directory_bolus, parallel = True, only_worm = None, only
 	'''	
 	my_workers = min(multiprocessing.cpu_count() - 1, 60)
 	t_total = time.time()
+	[print(directory_bolus.data_directories[i]) for i in range(directory_bolus.done, directory_bolus.ready)]
 
 	# Read in all my metadata and make checker (HumanCheckpoints) objects.
 	with concurrent.futures.ProcessPoolExecutor(max_workers = my_workers) as executor: # This is parallel way.
@@ -1359,6 +1376,8 @@ def make_checker(data_directory, extra_directories, experiment_directory, annota
 		checker = HumanCheckpoints(data_directory)
 	print('made checker. refreshing?')
 	if refresh_metadata:
+		print('refreshing')
+		print(experiment_directory)
 		checker.clean_experiment_directory(experiment_directory = experiment_directory)	
 	return checker
 
