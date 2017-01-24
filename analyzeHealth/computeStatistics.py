@@ -358,6 +358,7 @@ def multiple_nonlinear_regression(complete_df, independent_variables, dependent_
 		together_data = together_data[~np.isnan(together_data).any(axis = 1)]
 		independent_data  = together_data[:, :-1].copy()
 		dependent_data = together_data[:, -1]
+		SVR_weights = sample_weights
 	else:
 		print('Using customized sample_weights')
 		SVR_weights = np.tile(np.array([[sample_weights]]).transpose([2,0,1]),[1,1,complete_df.mloc(measures = [dependent_variable]).shape[2]])
