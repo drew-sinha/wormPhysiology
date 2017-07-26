@@ -160,7 +160,7 @@ def cohort_traces(my_subfigure, a_variable, adult_df, only_worms = None, make_la
     if make_labels: my_subfigure.set_ylabel(the_ylabel) 
     return my_subfigure
 
-def cohort_scatters(my_subfigure, xdata, ydata, adult_df, the_title = None, the_xlabel = None, the_ylabel = None, label_coordinates = (0, 0), no_cohorts_color = None, polyfit_degree = 1, only_worms = None, make_labels=True,bin_width_days=2,bin_mode='day',plot_trenddata=True):
+def cohort_scatters(my_subfigure, xdata, ydata, adult_df, the_title = None, the_xlabel = None, the_ylabel = None, label_coordinates = (0, 0), no_cohorts_color = None, polyfit_degree = 1, only_worms = None, make_labels=True,bin_width_days=2,bin_mode='day',plot_trenddata=True,**scatter_kws):
     '''
     Make colorful scatterplots by cohort.
     '''
@@ -181,7 +181,7 @@ def cohort_scatters(my_subfigure, xdata, ydata, adult_df, the_title = None, the_
     # Make the actual plot. 
     for i in range(0, len(life_cohorts)):
         a_cohort = life_cohorts[i]
-        my_subfigure.scatter(xdata[a_cohort], ydata[a_cohort], color = my_colors[i])    
+        my_subfigure.scatter(xdata[a_cohort], ydata[a_cohort], color = my_colors[i],**scatter_kws)    
 
     # Label the plot.
     if make_labels:
@@ -197,7 +197,11 @@ def cohort_scatters(my_subfigure, xdata, ydata, adult_df, the_title = None, the_
     xrange = np.linspace(np.min(xdata), np.max(xdata), 200)
     my_trendline = np.array([p_array[-i]*xrange**(i-1) for i in range(1, len(p_array)+1)])
     my_trendline = my_trendline.sum(axis = 0)
-    if plot_trenddata: my_subfigure.plot(xrange, my_trendline, color = 'black')
+    #if plot_trenddata: 
+    if no_cohorts_color is not None and all(my_colors[0] == [0,0,0]):
+        my_subfigure.plot(xrange, my_trendline, color = 'yellow')
+    else:
+        my_subfigure.plot(xrange, my_trendline, color = 'black')
 
     label_string = '$r^2 = ' + ('%.3f' % computeStatistics.quick_pearson(my_estimator, ydata)) + '$'
     if plot_trenddata: my_subfigure.annotate(label_string, label_coordinates, textcoords = 'data', size = 10)   
@@ -643,6 +647,7 @@ def show_spans(health_traces, health_traces_normed, health_spans, health_spans_n
         if len(my_cohorts[i]) > 0:
             a_cohort = my_cohorts[i]
             cohort_data = adult_df.mloc(adult_df.worms, [a_var])[a_cohort, 0, :]
+            #print(cohort_data.size)
             cohort_data = cohort_data[~np.isnan(cohort_data).all(axis = 1)]
             if not stop_with_death:
                 cohort_data = np.nanmean(cohort_data,axis=0)
@@ -732,12 +737,12 @@ def show_spans(health_traces, health_traces_normed, health_spans, health_spans_n
             health_spans.barh(2*(i+offset), cohort_transitions[i], color = my_colors[i], height = 2)
     if make_labels: health_spans.set_title('Absolute Healthspans')
     if make_labels: health_spans.set_xlabel('Days of Adult Life')
-    health_spans.set_xlim([0, max_adultspans])
+    #health_spans.set_xlim([0, max_adultspans]) # Did I modify this previously....?
     if make_labels: health_spans.set_ylabel('Adult Lifespan Cohorts')
 
     # Plot relative bars.   
     offset = len([my_obj for my_obj in health_spans_normed.get_children() if type(my_obj) is matplotlib.patches.Rectangle][:-1])/2
-    print(offset)
+    #print(offset)
     for i in range(0, len(my_cohorts)):
         if bar_plot_mode is 'original':
             health_spans_normed.barh(my_bins[i][0] + 0.1, 1, color = fade_colors[i], height = 1.8)
