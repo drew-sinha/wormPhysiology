@@ -81,7 +81,22 @@ class CompleteWormDF():
         self.extra_changed = False
         self.load_extra(directory_bolus)
         self.worms = sorted(list(self.raw.keys()))
-        self.measures = list(self.raw[self.worms[0]].columns)
+        #self.measures = list(self.raw[self.worms[0]].columns)
+        
+        def unique_items(seq):  # Credit to Peterbe
+            seen = set()
+            return [x for x in seq if x not in seen and not seen.add(x)]
+        all_measures = [list(self.raw[worm].columns) for worm in self.worms]
+        all_measures = [item for items in all_measures for item in items] # Flatten this list
+        self.measures = unique_items(all_measures)
+        for worm in self.worms:
+            for measure in self.measures:
+                if measure not in self.raw[worm].columns:
+                    self.raw[worm].loc[:,measure] = np.nan
+        
+        for worm in self.worms:
+            self.raw[worm] = self.raw[worm][self.measures]
+        
         all_shapes = []     
         for a_worm in self.raw.keys():
             my_shape = self.raw[a_worm].shape
@@ -240,8 +255,9 @@ class CompleteWormDF():
         '''
         Rescale normalized data so that it's in terms of standard deviations from the overall mean.
         '''
-        for var_index in range(len(self.measures[:-3])):
-            if np.isnan(self.means[var_index]):
+        #for var_index in range(len(self.measures[:-3])):    # NEED TO FIX THIS!
+        for var_index in range(len(self.measures)):
+            if np.isnan(self.means[var_index]) and self.measures[var_index] not in ['age','ghost_age','egg_age']: # Ithink this fixes it....
                 a_var = self.measures[var_index]            
                 my_data = np.ndarray.flatten(self.mloc(measures = [a_var]))
                 my_data = my_data[~np.isnan(my_data)]
