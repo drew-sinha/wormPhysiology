@@ -30,17 +30,8 @@ class CompleteWormDF():
         Initialize the kind of dataframe that I really need! No more pandas slowness and nonsense.
         '''     
         # Set some default values if parameters not given in extra_arguments.
-        if 'copy_health' not in extra_arguments.keys():
-            extra_arguments['copy_health'] = False
-        if 'copy_directory' not in extra_arguments.keys():
-            extra_arguments['copy_directory'] = None
         if 'adult_only' not in extra_arguments.keys():
             extra_arguments['adult_only'] = False
-        if 'use_old' not in extra_arguments.keys():
-            if sys.platform == 'win32':
-                extra_arguments['use_old'] = True
-            elif sys.platform == 'linux':
-                extra_arguments['use_old'] = False
         if 'smooth_mode' not in extra_arguments.keys():
             extra_arguments['smooth_mode'] = 'one'
         if 'key_measures' not in extra_arguments.keys():        
@@ -68,34 +59,23 @@ class CompleteWormDF():
         print('Working on the following directories:')
         [print(my_directory) for my_directory in data_directories]
         
-        if os.path.isdir(data_directories[0]) and not extra_arguments['use_old']:
-            self.raw = self.read_trajectories(data_directories, save_directory)
-        else:
-            self.raw = self.read_trajectories(directory_bolus.windows_health, save_directory)
-        if extra_arguments['copy_health']:
-            if extra_arguments['copy_directory'] == None:
-                extra_arguments['copy_directory'] = directory_bolus.windows_health
-            folderStuff.ensure_folder(extra_arguments['copy_directory'])
-            for a_worm in self.raw.keys():
-                self.raw[a_worm].to_csv(extra_arguments['copy_directory'] + os.path.sep + a_worm + '.tsv', sep = '\t')
+        self.raw = self.read_trajectories(data_directories, save_directory)
         self.extra_changed = False
         self.load_extra(directory_bolus)
         self.worms = sorted(list(self.raw.keys()))
-        #self.measures = list(self.raw[self.worms[0]].columns)
         
-        def unique_items(seq):  # Credit to Peterbe
-            seen = set()
-            return [x for x in seq if x not in seen and not seen.add(x)]
         all_measures = [list(self.raw[worm].columns) for worm in self.worms]
-        all_measures = [item for items in all_measures for item in items] # Flatten this list
-        self.measures = unique_items(all_measures)
+        self.measures = {item for items in all_measures for item in items} # Flatten this list
+        
         for worm in self.worms:
             for measure in self.measures:
                 if measure not in self.raw[worm].columns:
                     self.raw[worm].loc[:,measure] = np.nan
         
+
         for worm in self.worms:
             self.raw[worm] = self.raw[worm][self.measures]
+        
         
         all_shapes = []     
         for a_worm in self.raw.keys():
@@ -122,11 +102,11 @@ class CompleteWormDF():
             self.data[i, 0:measure_shape, 0:time_shape] = worm_data.transpose()
 
         # Set up some information for re-scaling.
-        self.means = np.empty(len(self.measures[:-3]))
+        self.means = np.empty(len(self.measures))
         self.means[:] = np.nan
-        self.stds = np.empty(len(self.measures[:-3]))
+        self.stds = np.empty(len(self.measures))
         self.stds[:] = np.nan
-
+        
         # Process the egg counts, smooth trajectories.
         self.process_eggs()
 
@@ -134,10 +114,9 @@ class CompleteWormDF():
             self.adjust_machine_bias(directory_bolus)
             self.smooth_trajectories(directory_bolus, extra_arguments)  
             
-        
         # Do some quick re-scaling.
         self.time_normalized_data()     
-        self.scale_normalized_data()
+        self.scale_normalized_data() # TODO Need to go back through this.
 
         # Add rates of change.
         if 'total_size' in self.measures:
@@ -255,7 +234,6 @@ class CompleteWormDF():
         '''
         Rescale normalized data so that it's in terms of standard deviations from the overall mean.
         '''
-        #for var_index in range(len(self.measures[:-3])):    # NEED TO FIX THIS!
         for var_index in range(len(self.measures)):
             if np.isnan(self.means[var_index]) and self.measures[var_index] not in ['age','ghost_age','egg_age']: # Ithink this fixes it....
                 a_var = self.measures[var_index]            
@@ -288,7 +266,7 @@ class CompleteWormDF():
             normed_array.fill(np.nan)
         
             adult_span = age_array[-1] - age_array[0]
-            time_points = int(adult_span//3) + 1
+            time_points = int(adult_span//3) + 1 # So is this assuming three hour time points uniformly????
             max_times = max(max_times, time_points)
 
             for i in range(0, time_points):
@@ -315,7 +293,7 @@ class CompleteWormDF():
             normed_data.append(normed_array)
         normed_data = np.array(normed_data)[:, :, :max_times]
         self.data = normed_data
-        self.times = [str(a_time//8) + '.' + str(a_time-8*(a_time//8)) for a_time in list(range(0, max_times))]
+        self.times = [str(a_time//8) + '.' + str(a_time-8*(a_time//8)) for a_time in list(range(0, max_times))] # Again - assuming 3 hr time points to yield 1/8 day time intervals.
         self.time_indices = {self.times[i]:i for i in range(0, len(self.times))}
         self.ages = [int(a_time.split('.')[0]) + int(a_time.split('.')[1])/8 for a_time in self.times]
         return
@@ -621,7 +599,7 @@ class CompleteWormDF():
                 column_data = np.expand_dims(svr_data, axis = 1)
                 self.extra_data[a_health] = column_data
                 all_physiology.extend(health_measures[a_health])
-            self.add_column(self.extra_data[a_health], -3, a_health)        
+            self.add_column(self.extra_data[a_health], -3, a_health)    # TODO think about modifying this later w.r.t. -3 column index    
         self.scale_normalized_data()
         
         # Now do it for the overall health measure.
