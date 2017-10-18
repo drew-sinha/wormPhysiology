@@ -46,7 +46,9 @@ class CompleteWormDF():
             
         if 'save_extra' not in extra_arguments.keys():
             extra_arguments['save_extra'] = False
-            
+        
+        extra_arguments.setdefault('bad_worm_kws',[])
+        
         # Read in the raw data and set up some basic information.       
         self.save_directory = save_directory
         self.key_measures = extra_arguments['key_measures']
@@ -59,20 +61,21 @@ class CompleteWormDF():
         print('Working on the following directories:')
         [print(my_directory) for my_directory in data_directories]
         
-        self.raw = self.read_trajectories(data_directories, save_directory)
+        self.raw = self.read_trajectories(data_directories, save_directory,extra_arguments)
         self.extra_changed = False
         self.load_extra(directory_bolus)
         self.worms = sorted(list(self.raw.keys()))
         
         all_measures = [list(self.raw[worm].columns) for worm in self.worms]
-        self.measures = {item for items in all_measures for item in items} # Flatten this list
+        self.measures = list({item for items in all_measures for item in items}) # Flatten this list
         
+        # Just in case a measurement wasn't taken for all individuals
         for worm in self.worms:
             for measure in self.measures:
                 if measure not in self.raw[worm].columns:
                     self.raw[worm].loc[:,measure] = np.nan
         
-
+        # Reorder raw data columns for consistent ordering when filling the df and setting up indexing
         for worm in self.worms:
             self.raw[worm] = self.raw[worm][self.measures]
         
@@ -116,7 +119,7 @@ class CompleteWormDF():
             
         # Do some quick re-scaling.
         self.time_normalized_data()     
-        self.scale_normalized_data() # TODO Need to go back through this.
+        self.scale_normalized_data()
 
         # Add rates of change.
         if 'total_size' in self.measures:
@@ -443,7 +446,7 @@ class CompleteWormDF():
             self.data[:, variable_index, :] = smoothed_data
         return
 
-    def read_trajectories(self, data_directories, save_directory):
+    def read_trajectories(self, data_directories, save_directory, extra_arguments):
         '''
         Reads in trajectories from .tsv files in working_directory's measured_health subdirectory and then groups them together nicely in a WormData class. Also adds meta-information from metadata in data_directory.
         '''
@@ -476,16 +479,32 @@ class CompleteWormDF():
         if type(data_directories) == type([]):
             health_directories = [data_directory + os.path.sep + 'measured_health' for data_directory in data_directories]
             my_tsvs = []
-            for health_directory in health_directories:
-                my_tsvs.extend([health_directory + os.path.sep + a_file for a_file in os.listdir(health_directory) if a_file.split('.')[-1] == 'tsv'])
+            
+            if len(extra_arguments['bad_worm_kws']) > 0:
+                for data_directory in data_directories:
+                    annotation_tsv = [data_directory + os.path.sep + my_file for my_file in os.listdir(data_directory) if '.tsv' in my_file][0]
+                    annotation_data = pd.read_csv(annotation_tsv,sep='\t')
+                    bad_worms = np.array([
+                        worm[1:] for worm, entry in zip(annotation_data['Worm'],annotation_data['Notes'])
+                        if (pd.isnull(entry)) 
+                        or ('DEAD' not in entry)
+                        or any([bad_kw in entry for bad_kw in extra_arguments['bad_worm_kws']])])
+                    for a_file in os.listdir(data_directory + os.path.sep + 'measured_health'):
+                        if ((a_file.split('.')[-1] == 'tsv') and
+                            (a_file.split('.')[0] not in bad_worms)):
+                            my_tsvs.extend([data_directory + os.path.sep + 'measured_health' + os.path.sep + a_file])
+                        else:
+                            print('Skipping '+ data_directory + ' ' + a_file + ': Bad worm')
+            else:
+                for health_directory in health_directories:
+                    my_tsvs.extend([health_directory + os.path.sep + a_file for a_file in os.listdir(health_directory) if a_file.split('.')[-1] == 'tsv'])
 
             # Exclude worms.
             for a_worm in not_yet_done:
                 if a_worm + '.tsv' in my_tsvs:
                     print('\tSkipping ' + a_worm + ', it is not yet done processing.')
                     my_tsvs.remove(a_worm + '.tsv')
-                    
-            #** Comment this out since note field was used to filter out worms previously... should be good, right?
+            
             for a_worm in never_eggs:
                 #worm_file = [a_dir for a_dir in health_directories if ' '.join(a_worm.split(' ')[:-2]) + ' Run ' + a_worm.split(' ')[-2] in a_dir][0] + os.path.sep + a_worm.split(' ')[-1] + '.tsv'
                 worm_file = [a_dir for a_dir in health_directories if ' '.join(a_worm.split(' ')[:-2]) + ' Run ' + a_worm.split(' ')[-2] in a_dir]
@@ -498,7 +517,7 @@ class CompleteWormDF():
             worm_frames = {a_file.split(os.path.sep)[-3].replace(' Run ', ' ') + ' ' + a_file.split(os.path.sep)[-1].split('.')[-2]: pd.read_csv(a_file, sep = '\t', index_col = 0) for a_file in my_tsvs}      
 
         # Read in my measured_health data from my special directory.
-        elif type(data_directories) == type(''):
+        elif type(data_directories) == type(''):    # TODO - think about removing this....
             my_tsvs = [a_file for a_file in os.listdir(data_directories) if a_file.split('.')[-1] == 'tsv']
             
             # Exclude worms.
