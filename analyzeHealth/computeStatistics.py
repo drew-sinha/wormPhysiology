@@ -561,20 +561,13 @@ def svr_data(complete_df, independent_variables, dependent_variable = 'ghost_age
     Compute predicted lifespan remaining for independent_variables using an SVM.
     '''
 
-    #if SVM_directory is '':
     if svm_to_use is None:
         # Get only non-null values to feed into my SVR. 
         (my_svm, dependent_data, independent_data) = multiple_nonlinear_regression(complete_df, independent_variables, dependent_variable,sample_weights=sample_weights)
     else:
-        # Copied from multiple nonlinear regression
-        independent_data  = np.array([np.ndarray.flatten(complete_df.mloc(measures = [independent_variable])) for independent_variable in independent_variables])
-        dependent_data = np.ndarray.flatten(complete_df.mloc(measures = [dependent_variable]))
-        together_data = np.vstack((independent_data, dependent_data)).transpose()
-        together_data = together_data[~np.isnan(together_data).any(axis = 1)]
-        independent_data  = together_data[:, :-1].copy()
-        dependent_data = together_data[:, -1]
         my_svm = svm_to_use
     
+    # Break down from 3D to 2D
     variable_data = complete_df.mloc(complete_df.worms, independent_variables)
     flat_variable_data = selectData.flatten_two_dimensions(variable_data, 1)
     nonnan_values = ~(np.isnan(flat_variable_data).any(axis = 1))
