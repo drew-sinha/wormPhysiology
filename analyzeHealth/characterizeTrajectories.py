@@ -62,7 +62,6 @@ class CompleteWormDF():
         [print(my_directory) for my_directory in data_directories]
         
         self.raw = self.read_trajectories(data_directories, save_directory,extra_arguments)
-        self.extra_changed = False
         self.worms = sorted(list(self.raw.keys()))
         
         all_measures = [list(self.raw[worm].columns) for worm in self.worms]
@@ -121,43 +120,8 @@ class CompleteWormDF():
         self.scale_normalized_data()
 
         self.add_healths(extra_arguments)
-            
-    def load_extra(self, directory_bolus):
-        '''     
-        Load my extra data if I can find it.        
-        '''
-        frame_string = ''
-        if self.adult_only:
-            frame_string += 'adult_'
-        extra_file = directory_bolus.windows_health + os.path.sep + frame_string + 'extra_data.pickle'
-        extra_backup = directory_bolus.human_directory + os.path.sep + frame_string + 'extra_data.pickle'
-        if os.path.isfile(extra_file):
-            with open(extra_file, 'rb') as my_file:     
-                self.extra_data = pickle.load(my_file)
-        elif os.path.isfile(extra_backup):
-            with open(extra_backup, 'rb') as my_file:       
-                self.extra_data = pickle.load(my_file)
-        else:
-            self.extra_data = {}
-        return 
         
-    def save_extra(self, directory_bolus):
-        '''
-        Save my extra data if it's changed.
-        '''
-        frame_string = ''
-        if self.adult_only:
-            frame_string += 'adult_'
-        extra_file = directory_bolus.windows_health + os.path.sep + frame_string + 'extra_data.pickle'
-        extra_backup = directory_bolus.human_directory + os.path.sep + frame_string + 'extra_data.pickle'
-        if os.path.isdir(directory_bolus.windows_health):
-            with open(extra_file, 'wb') as my_file:     
-                pickle.dump(self.extra_data, my_file)   
-        if os.path.isdir(directory_bolus.working_directory):
-            with open(extra_backup, 'wb') as my_file:       
-                pickle.dump(self.extra_data, my_file)   
-        return
-                
+        
     def mloc(self, worms = None, measures = None, times = None):
         '''
         Selects information from my dictionary of normalized time dataframes as if it were a 3-dimensional array.
@@ -566,7 +530,7 @@ class CompleteWormDF():
 
     def add_healths(self, extra_arguments):
         '''
-        Add 'health' measurements to both extra_data and to my columns.
+        Add 'health' measurements to df.
         '''
         # These are the original measures from which my health measurements are composed.
         health_measures = {
@@ -585,7 +549,6 @@ class CompleteWormDF():
             print('\tAdding health measure: ' + a_health + '.', flush = True)
             
             print('\t\tComputing health measure: ' + a_health + '.', flush = True)
-            self.extra_changed = True
             if extra_arguments['svm_directory'] is not '':
                 print('Using svm for '+a_health+' from ' + extra_arguments['svm_directory']+os.path.sep+a_health+'HealthSVR.pickle')
                 with open(extra_arguments['svm_directory']+os.path.sep+a_health+'HealthSVR.pickle','rb') as my_file:
@@ -607,9 +570,8 @@ class CompleteWormDF():
                     pickle.dump({'computed_svm':computed_svm,'independent_variables':health_measures[a_health],'sample_weights':extra_arguments['sample_weights']},my_svm_file)
             
             column_data = np.expand_dims(svr_data, axis = 1)
-            self.extra_data[a_health] = column_data
             all_physiology.extend(health_measures[a_health])
-            self.add_column(self.extra_data[a_health], -3, a_health)    # TODO think about modifying this later w.r.t. -3 column index    
+            self.add_column(column_data, -3, a_health)    # TODO think about modifying this later w.r.t. -3 column index    
         self.scale_normalized_data()
         
         # Now do it for the overall health measure.
@@ -626,7 +588,6 @@ class CompleteWormDF():
             print('No SVM specified; recomputing SVM')
             svm_to_use = None
         
-        self.extra_changed = True
         (variable_data, svr_data, life_data, computed_svm) = computeStatistics.svr_data(self, all_physiology, dependent_variable = 'ghost_age', svm_to_use =svm_to_use,sample_weights=extra_arguments['sample_weights'])
         
         if extra_arguments['svm_dir_out'] is not '':
@@ -636,8 +597,7 @@ class CompleteWormDF():
                 pickle.dump({'computed_svm':computed_svm,'independent_variables':all_physiology,'sample_weights':extra_arguments['sample_weights']},my_svm_file)
         
         column_data = np.expand_dims(svr_data, axis = 1)
-        self.extra_data['health'] = column_data
-        self.add_column(self.extra_data['health'], -3, 'health')
+        self.add_column(column_data, -3, 'health')
         self.scale_normalized_data()
         return
     
