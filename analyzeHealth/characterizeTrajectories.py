@@ -266,7 +266,7 @@ class CompleteWormDF():
         
         mean_std_index = column_index
         if column_index < 0:
-            mean_std_index = len(self.measures) + column_index
+            mean_std_index = len(self.measures) + column_index - 1 # Willie had an off by one error here! (length inc. after adding add'l item)
         self.means = np.concatenate([self.means[:mean_std_index], [np.nan], self.means[mean_std_index:]], axis = 0) 
         self.stds = np.concatenate([self.stds[:mean_std_index], [np.nan], self.stds[mean_std_index:]], axis = 0)    
         return
@@ -571,7 +571,7 @@ class CompleteWormDF():
             
             column_data = np.expand_dims(svr_data, axis = 1)
             all_physiology.extend(health_measures[a_health])
-            self.add_column(column_data, -3, a_health)    # TODO think about modifying this later w.r.t. -3 column index    
+            self.add_column(column_data, -3, a_health)    # TODO think about modifying this later w.r.t. -3 column index 
         self.scale_normalized_data()
         
         # Now do it for the overall health measure.
