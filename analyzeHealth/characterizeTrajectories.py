@@ -594,7 +594,9 @@ class CompleteWormDF():
     def make_SVR(self, independent_variables, dependent_variable='ghost_age', 
         svm_savepath=None, sample_weights=None,
         worms=None,times=None):
-            
+        '''
+            Convenience function for making a single SVR using the data contained in this dataframe.
+        '''
         (computed_svm, dependent_data, independent_data) = computeStatistics.multiple_nonlinear_regression(
             self, 
             independent_variables, 
@@ -603,9 +605,9 @@ class CompleteWormDF():
             worms=None,
             times=None)
         
-        if svm_savepath is not '':
-            print('Saving SVR data for overall health at '+ svm_save_fp)
-            with open(svm_save_fp,'wb') as my_svm_file:
+        if svm_savepath is not None:
+            print('Saving SVR at '+ svm_savepath)
+            with open(svm_savepath,'wb') as my_svm_file:
                 pickle.dump({'computed_svm':computed_svm,
                     'independent_variables':independent_variables,
                     'dependent_variable':dependent_variable,
@@ -614,6 +616,7 @@ class CompleteWormDF():
                     'times':times},
                     my_svm_file)
         return computed_svm
+    
     
     def display_names(self, my_var):
         '''
