@@ -48,6 +48,7 @@ class CompleteWormDF():
             extra_arguments['save_extra'] = False
         
         extra_arguments.setdefault('bad_worm_kws',[])
+        extra_arguments.setdefault('add_health',False)
         
         # Read in the raw data and set up some basic information.       
         self.save_directory = save_directory
@@ -109,17 +110,18 @@ class CompleteWormDF():
         self.stds[:] = np.nan
         
         self.process_eggs()
-        self.adjust_machine_bias(directory_bolus)
+        self.adjust_size(directory_bolus)
         self.smooth_trajectories(directory_bolus, extra_arguments)  
             
         # Do some quick re-scaling.
         self.time_normalized_data()     
-        self.scale_normalized_data()
+        self.scale_normalized_data() # Error here? (keeping this for backward consistency)
 
         self.add_rates()
         self.scale_normalized_data()
 
-        self.add_healths(extra_arguments)
+        if extra_arguments['add_health']:
+            self.add_healths(extra_arguments)
         
         
     def mloc(self, worms = None, measures = None, times = None):
@@ -489,7 +491,7 @@ class CompleteWormDF():
             worm_frames = {a_file[:-4]: pd.read_csv(data_directories + os.path.sep + a_file, sep = '\t', index_col = 0) for a_file in my_tsvs}
         return worm_frames
     
-    def adjust_machine_bias(self, directory_bolus, size_df = None, renew_regression = False):
+    def adjust_size(self, directory_bolus, size_df = None, renew_regression = False):
         '''
         Adjust total_size for any bias in measurement by the automated method as compared to the manually drawn masks.
         ''' 
@@ -624,67 +626,6 @@ class CompleteWormDF():
                     'times':times},
                     my_svm_file)
         return computed_svm
-        
-    '''
-    # IN PROGRESS
-    def add_health_measurements(self, health_measures=None, 
-        svm_directory='',
-        add_overallhealth=True,
-        **svm_args):
-        '''
-            #health_measures - dict with keys labeling one or more measure classes and values consisting of a list of one or more variables to be classified under the measure class
-        '''
-        if health_measures is None:
-            health_measures = {
-                'autofluorescence': ['intensity_80'],       
-                'size': ['adjusted_size', 'adjusted_size_rate'],        
-                'eggs': ['cumulative_eggs', 'cumulative_eggs_rate'],        
-                'texture': ['life_texture'],        
-                'movement': ['bulk_movement', 'stimulated_rate_a', 'stimulated_rate_b', 'unstimulated_rate'],
-            }
-        if add_overallhealth: 
-            health_measures = health_measures.copy()
-            health_measures['health'] = list(health_measures.values())
-        
-        measurement_types = sorted(list(health_measures.keys()))
-        for measurement_type in measurement_types:
-            if type(svm_info) is '':
-                svm_to_use = self.make_SVR(health_measures[measurement_type],
-                    **svm_args)
-                (variable_data, svr_data, life_data, computed_svm) = computeStatistics.svr_data(self, 
-                    health_measures[measurement_type],
-                    svm_to_use = svm_to_use, 
-                    **svm_args)
-                    
-            elif type(svm_directory) is str: # Path to svm file
-                if measurement_type is not 'health':
-                    pickle_filepath = svm_directory+os.path.sep+measurement_type+'HealthSVR.pickle'
-                else:
-                    pickle_filepath = svm_directory+os.path.sep+'overallHealthSVR.pickle'
-                
-                print('Using svm for ' + measurement_type +' from ' + pickle_filepath)
-                with open(pickle_filepath','rb') as my_file:
-                    my_svm_data = pickle.load(my_file)
-                    if (any([loaded_ind_var not in health_measures[measurement_type] for loaded_ind_var in my_svm_data['independent_variables']]) or 
-                        any([desired_ind_var not in my_svm_data['independent_variables'] for desired_ind_var in health_measures[measurement_var]])):
-                            raise Exception('Trying to use an incompatible SVM for regression')
-                svm_to_use = my_svm_data['computed_svm']
-                sample_weights = my_svm_data['sample_weights']
-                
-                try:
-                    (variable_data, svr_data, life_data, computed_svm) = computeStatistics.svr_data(self, 
-                        **my_svm_data)
-                except TypeError: 
-                    # In case the svm file has more data than what we need
-                   (variable_data, svr_data, life_data, computed_svm) = computeStatistics.svr_data(self, dependent_variable = 'ghost_age'
-                        **my_svm_data)
-                    
-                    
-
-            column_data = np.expand_dims(svr_data, axis = 1)
-            self.add_column(column_data, -3, measurement_type)
-        self.scale_normalized_data()
-    '''
     
     def display_names(self, my_var):
         '''
