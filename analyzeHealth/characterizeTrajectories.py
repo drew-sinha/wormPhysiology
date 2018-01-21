@@ -601,14 +601,14 @@ class CompleteWormDF():
         self.scale_normalized_data()
         return
     
-    def make_SVR(self, predictor_variables, outcome_variable='ghost_age', 
+    def make_SVR(self, independent_variables, dependent_variable='ghost_age', 
         svm_savepath=None, sample_weights=None,
         worms=None,times=None):
             
         (computed_svm, dependent_data, independent_data) = computeStatistics.multiple_nonlinear_regression(
             self, 
-            predictor_variables, 
-            outcome_variable,
+            independent_variables, 
+            dependent_variable,
             sample_weights=sample_weights,
             worms=None
             times=None)
@@ -617,8 +617,8 @@ class CompleteWormDF():
             print('Saving SVR data for overall health at '+ svm_save_fp)
             with open(svm_save_fp,'wb') as my_svm_file:
                 pickle.dump({'computed_svm':computed_svm,
-                    'predictor_variables':predictor_variables,
-                    'outcome_variable':outcome_variable,
+                    'independent_variables':independent_variables,
+                    'dependent_variable':dependent_variable,
                     'sample_weights':sample_weights},
                     my_svm_file)
         return computed_svm
