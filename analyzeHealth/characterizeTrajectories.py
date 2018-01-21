@@ -190,7 +190,7 @@ class CompleteWormDF():
         Rescale normalized data so that it's in terms of standard deviations from the overall mean.
         '''
         for var_index in range(len(self.measures)):
-            if np.isnan(self.means[var_index]) and self.measures[var_index] not in ['age','ghost_age','egg_age']: # Ithink this fixes it....
+            if np.isnan(self.means[var_index]) and self.measures[var_index] not in ['age','ghost_age','egg_age']:
                 a_var = self.measures[var_index]            
                 my_data = np.ndarray.flatten(self.mloc(measures = [a_var]))
                 my_data = my_data[~np.isnan(my_data)]
@@ -224,7 +224,7 @@ class CompleteWormDF():
             normed_array.fill(np.nan)
         
             adult_span = age_array[-1] - age_array[0]
-            time_points = int(adult_span//3) + 1 # So is this assuming three hour time points uniformly????
+            time_points = int(adult_span//3) + 1
             max_times = max(max_times, time_points)
 
             for i in range(0, time_points):
@@ -600,6 +600,28 @@ class CompleteWormDF():
         self.add_column(column_data, -3, 'health')
         self.scale_normalized_data()
         return
+    
+    def make_SVR(self, predictor_variables, outcome_variable='ghost_age', 
+        svm_savepath=None, sample_weights=None,
+        worms=None,times=None):
+            
+        (computed_svm, dependent_data, independent_data) = computeStatistics.multiple_nonlinear_regression(
+            self, 
+            predictor_variables, 
+            outcome_variable,
+            sample_weights=sample_weights,
+            worms=None
+            times=None)
+        
+        if svm_savepath is not '':
+            print('Saving SVR data for overall health at '+ svm_save_fp)
+            with open(svm_save_fp,'wb') as my_svm_file:
+                pickle.dump({'computed_svm':computed_svm,
+                    'predictor_variables':predictor_variables,
+                    'outcome_variable':outcome_variable,
+                    'sample_weights':sample_weights},
+                    my_svm_file)
+        return computed_svm
     
     def display_names(self, my_var):
         '''

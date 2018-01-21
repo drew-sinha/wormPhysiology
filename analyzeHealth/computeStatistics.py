@@ -346,14 +346,18 @@ def predict_life(complete_df, independent_variables = None, dependent_variable =
 
 
 
-def multiple_nonlinear_regression(complete_df, independent_variables, dependent_variable = 'ghost_age', method = 'svm',sample_weights=None):
+def multiple_nonlinear_regression(complete_df, independent_variables, dependent_variable = 'ghost_age', method = 'svm',sample_weights=None,worms=None,times=None):
     '''
     Return an SVR trained to predict dependent_variable from independent_variables.
     
     sample_weights - (num_worms,) vector describing how to weight data from each worm
     '''
-    independent_data  = np.array([np.ndarray.flatten(complete_df.mloc(measures = [independent_variable])) for independent_variable in independent_variables])
-    dependent_data = np.ndarray.flatten(complete_df.mloc(measures = [dependent_variable]))
+    independent_data  = np.array([np.ndarray.flatten(complete_df.mloc(worms=worms,
+        measures = [independent_variable])) for independent_variable in independent_variables],
+        times=times)
+    dependent_data = np.ndarray.flatten(complete_df.mloc(worms=worms,
+        measures = [dependent_variable],
+        times=times))
     if sample_weights is None:
         print('No sample_weights provided')
         together_data = np.vstack((independent_data, dependent_data)).transpose()
