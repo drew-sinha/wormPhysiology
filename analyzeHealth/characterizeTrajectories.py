@@ -25,7 +25,7 @@ class CompleteWormDF():
     '''
     A class analogous to the complete_df I used for the Framingham Heart Study, containing several useful methods for analyzing worms.
     '''
-    def __init__(self, directory_bolus, save_directory, extra_arguments = {}):
+    def __init__(self, directory_bolus, extra_arguments = {}):
         '''
         Initialize the kind of dataframe that I really need! No more pandas slowness and nonsense.
         '''     
@@ -43,7 +43,6 @@ class CompleteWormDF():
         [extra_arguments.setdefault(k,v) for k,v in default_args.items()]
         
         # Read in the raw data and set up some basic information.       
-        self.save_directory = save_directory
         self.key_measures = extra_arguments['key_measures']
         self.adult_only = extra_arguments['adult_only']
         if type(directory_bolus.ready) is int:
@@ -53,7 +52,7 @@ class CompleteWormDF():
         print('Working on the following directories:')
         [print(my_directory) for my_directory in data_directories]
         
-        self.raw = self.read_trajectories(data_directories, save_directory,extra_arguments)
+        self.raw = self.read_trajectories(data_directories, extra_arguments)
         self.worms = sorted(list(self.raw.keys()))
         
         all_measures = [list(self.raw[worm].columns) for worm in self.worms]
@@ -77,7 +76,7 @@ class CompleteWormDF():
         max_times = my_shape[0]
         max_measurements = my_shape[1]
 
-        # Set up ways to look up raw indices of string names of variables and worms.
+        # Set up convenience variables to reference variables and worms.
         self.worm_indices = {self.worms[i]:i for i in range(0, len(self.worms))}
         self.measure_indices = {self.measures[i]:i for i in range(0, len(self.measures))}
         self.times = [str(a_time//8) + '.' + str(a_time-8*(a_time//8)) for a_time in list(range(0, max_times))]
@@ -368,7 +367,7 @@ class CompleteWormDF():
                 smooth_settings = json.loads(read_file.read())
         else:
             print('smooth_parameters not found; making usmoothed df')
-            unsmoothed_df = CompleteWormDF(directory_bolus, self.save_directory, {'smooth_mode': None})
+            unsmoothed_df = CompleteWormDF(directory_bolus, {'smooth_mode': None})
             (smooth_settings, results_dict) = grid_search_smooth(unsmoothed_df, directory_bolus)
             
         # Save my parameters in both locations if they are only in one.         
@@ -392,7 +391,7 @@ class CompleteWormDF():
             self.data[:, variable_index, :] = smoothed_data
         return
 
-    def read_trajectories(self, data_directories, save_directory, extra_arguments):
+    def read_trajectories(self, data_directories, extra_arguments):
         '''
         Reads in trajectories from .tsv files in working_directory's measured_health subdirectory and then groups them together nicely in a WormData class. Also adds meta-information from metadata in data_directory.
         '''
