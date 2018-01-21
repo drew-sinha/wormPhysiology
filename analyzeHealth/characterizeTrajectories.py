@@ -30,30 +30,21 @@ class CompleteWormDF():
         Initialize the kind of dataframe that I really need! No more pandas slowness and nonsense.
         '''     
         # Set some default values if parameters not given in extra_arguments.
-        if 'adult_only' not in extra_arguments.keys():
-            extra_arguments['adult_only'] = False
-        if 'smooth_mode' not in extra_arguments.keys():
-            extra_arguments['smooth_mode'] = 'one'
-        if 'key_measures' not in extra_arguments.keys():        
-            extra_arguments['key_measures'] = ['intensity_80', 'cumulative_eggs', 'bulk_movement', 'adjusted_size', 'life_texture']
-        
-        if 'svm_directory' not in extra_arguments.keys():
-            extra_arguments['svm_directory'] = ''
-        if 'svm_dir_out' not in extra_arguments.keys():
-            extra_arguments['svm_dir_out'] = ''
-        if 'sample_weights' not in extra_arguments.keys():
-            extra_arguments['sample_weights']=None
-            
-        if 'save_extra' not in extra_arguments.keys():
-            extra_arguments['save_extra'] = False
-        
-        extra_arguments.setdefault('bad_worm_kws',[])
-        extra_arguments.setdefault('add_health',False)
+        default_args = {
+            'adult_only': False,
+            'smooth_mode': 'one',
+            'key_measures': ['intensity_80','cumulative_eggs', 'bulk_movement', 'adjusted_size', 'life_texture'],
+            'svm_directory': '',
+            'svm_dir_out': '',
+            'sample_weights':None,
+            'bad_worm_kws':[],
+            'add_health':False
+        }
+        [extra_arguments.setdefault(k,v) for k,v in default_args.items()]
         
         # Read in the raw data and set up some basic information.       
         self.save_directory = save_directory
         self.key_measures = extra_arguments['key_measures']
-        
         self.adult_only = extra_arguments['adult_only']
         if type(directory_bolus.ready) is int:
             data_directories = directory_bolus.data_directories[:directory_bolus.ready]
@@ -77,7 +68,6 @@ class CompleteWormDF():
         # Reorder raw data columns for consistent ordering when filling the df and setting up indexing
         for worm in self.worms:
             self.raw[worm] = self.raw[worm][self.measures]
-        
         
         all_shapes = []     
         for a_worm in self.raw.keys():
@@ -109,11 +99,10 @@ class CompleteWormDF():
         self.stds = np.empty(len(self.measures))
         self.stds[:] = np.nan
         
+        # Some backend post-processing
         self.process_eggs()
         self.adjust_size(directory_bolus)
         self.smooth_trajectories(directory_bolus, extra_arguments)  
-            
-        # Do some quick re-scaling.
         self.time_normalized_data()     
         self.scale_normalized_data() # Error here? (keeping this for backward consistency)
 
