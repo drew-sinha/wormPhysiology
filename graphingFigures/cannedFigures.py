@@ -198,10 +198,10 @@ def cohort_scatters(my_subfigure, xdata, ydata, adult_df, the_title = None, the_
     my_trendline = np.array([p_array[-i]*xrange**(i-1) for i in range(1, len(p_array)+1)])
     my_trendline = my_trendline.sum(axis = 0)
     #if plot_trenddata: 
-    if no_cohorts_color is not None and all(my_colors[0] == [0,0,0]):
-        my_subfigure.plot(xrange, my_trendline, color = 'yellow')
-    else:
-        my_subfigure.plot(xrange, my_trendline, color = 'black')
+    #~ if no_cohorts_color is not None and all(my_colors[0] == [0,0,0]):
+        #~ my_subfigure.plot(xrange, my_trendline, color = 'yellow')
+    #~ else:
+        #~ my_subfigure.plot(xrange, my_trendline, color = 'black')
 
     label_string = '$r^2 = ' + ('%.3f' % computeStatistics.quick_pearson(my_estimator, ydata)) + '$'
     if plot_trenddata: my_subfigure.annotate(label_string, label_coordinates, textcoords = 'data', size = 10)   
