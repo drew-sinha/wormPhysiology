@@ -601,7 +601,7 @@ class CompleteWormDF():
             independent_variables, 
             dependent_variable,
             sample_weights=sample_weights,
-            worms=None
+            worms=None,
             times=None)
         
         if svm_savepath is not '':
@@ -610,8 +610,8 @@ class CompleteWormDF():
                 pickle.dump({'computed_svm':computed_svm,
                     'independent_variables':independent_variables,
                     'dependent_variable':dependent_variable,
-                    'sample_weights':sample_weights
-                    'worms':worms
+                    'sample_weights':sample_weights,
+                    'worms':worms,
                     'times':times},
                     my_svm_file)
         return computed_svm

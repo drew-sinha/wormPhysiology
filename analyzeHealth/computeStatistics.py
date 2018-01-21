@@ -353,8 +353,8 @@ def multiple_nonlinear_regression(complete_df, independent_variables, dependent_
     sample_weights - (num_worms,) vector describing how to weight data from each worm
     '''
     independent_data  = np.array([np.ndarray.flatten(complete_df.mloc(worms=worms,
-        measures = [independent_variable])) for independent_variable in independent_variables],
-        times=times)
+        measures = [independent_variable],times=times)) 
+        for independent_variable in independent_variables])
     dependent_data = np.ndarray.flatten(complete_df.mloc(worms=worms,
         measures = [dependent_variable],
         times=times))
