@@ -95,6 +95,20 @@ def cohort_traces(my_subfigure, a_variable, adult_df, only_worms = None, make_la
 
     # Make bins of lifespans.
     (life_cohorts, bin_lifes, my_bins, my_colors) = selectData.adult_cohort_bins(adult_df, my_worms = adult_df.worms, bin_width_days = bin_width_days,bin_mode=bin_mode)
+        if line_color is not None:
+        # Build the colors with line_color as the base....
+        # Do everything in lab space where we can vary "l" (luminosity parameter) across cohorts
+        
+        # First, handle the case for black (can't operate on all zeros)
+        if (np.array(line_color)==np.array([0,0,0])).all():
+            line_color = np.array([1,1,1])*.99
+        
+        colors_lab = skimage.color.rgb2lab(np.array([[line_color]]))
+        
+        my_colors = [skimage.color.lab2rgb(
+            np.array([[[100-(lab[0,0,0]*i/len(my_colors)),lab[0,0,1],lab[0,0,2]]]]))[0,0,:] 
+            for i in range(len(my_colors)+1)][1:]
+    
     if len(cohorts_to_use) >0:
         life_cohorts = [life_cohorts[c_idx] for c_idx in cohorts_to_use]
         bin_lifes = [bin_lifes[c_idx] for c_idx in cohorts_to_use]
