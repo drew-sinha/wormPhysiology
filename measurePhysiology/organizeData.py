@@ -1195,9 +1195,12 @@ class HumanCheckpoints():
         return
 
 
-    def delete_dead(self, experiment_directory = None):
+    def delete_dead(self, experiment_directory = None, max_time_to_keep = 24):
         '''
         Delete frames after death from the subdirectory to save space.
+        
+            max_time_to_keep - Keep data from timepoints taken earlier than this amount of time past time of death (in hours)
+    
         '''
         if experiment_directory == None or experiment_directory.isdigit():
             my_prefix = '0'         
@@ -1206,11 +1209,15 @@ class HumanCheckpoints():
             my_prefix = experiment_directory
             experiment_directory = self.more_directories[my_prefix]
         
+        timepoint_idx_map = {timepoint:i for i,timepoint in enumerate(self.metadata.timepoints)}
+        
         for worm_directory in self.worm_directories:
-            worm_name = self.worm_name(worm_directory)
-            if worm_name in self.good_worms and worm_name in self.dead_worms:
-                move_directory = experiment_directory + os.path.sep + worm_name
-                shutil.rmtree(move_directory + os.path.sep + 'life_after_death')
+            death_timepoint_idx = self.latest_annotations.loc[worm_directory]
+            cutoff_timepoint_idx = np.abs((self.metadata.timepoints[death_timepoint_idx]-self.metadata.timepoints[0])/3600 - max_time_to_keep)
+            for my_file in os.path.isfile(self.data_directory + os.path.sep + worm_directory):
+                if my_file.split('.')[-1] in ['png', 'tiff'] and timepoint_idx_map[my_file[:13]] > cutoff_timepoint_idx:
+                    os.remove(self.data_directory + os.path.sep + worm_directory + os.path.sep + my_file)
+                    
         return
 
     def move_dead(self, experiment_directory):
