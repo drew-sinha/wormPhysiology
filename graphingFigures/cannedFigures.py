@@ -95,7 +95,7 @@ def cohort_traces(my_subfigure, a_variable, adult_df, only_worms = None, make_la
 
     # Make bins of lifespans.
     (life_cohorts, bin_lifes, my_bins, my_colors) = selectData.adult_cohort_bins(adult_df, my_worms = adult_df.worms, bin_width_days = bin_width_days,bin_mode=bin_mode)
-        if line_color is not None:
+    if line_color is not None:
         # Build the colors with line_color as the base....
         # Do everything in lab space where we can vary "l" (luminosity parameter) across cohorts
         
@@ -202,7 +202,7 @@ def cohort_scatters(my_subfigure, xdata, ydata, adult_df, the_title = None, the_
         my_subfigure.set_title(the_title)
         my_subfigure.set_xlabel(the_xlabel)
         my_subfigure.set_ylabel(the_ylabel) 
-    my_subfigure.set_aspect('auto')
+    #my_subfigure.set_aspect('auto')
 
     # Fit a polynomial for a trendline and for r^2.
     p_array = np.polyfit(xdata, ydata, polyfit_degree)
