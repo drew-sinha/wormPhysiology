@@ -39,7 +39,7 @@ class CompleteWormDF():
             'sample_weights':None,
             'bad_worm_kws':[],
             'add_health':False,
-            'rescale_data': True,
+            'interpolate_data': True,
         }
         [extra_arguments.setdefault(k,v) for k,v in default_args.items()]
         
@@ -103,14 +103,13 @@ class CompleteWormDF():
         self.process_eggs()
         self.adjust_size(directory_bolus)
         self.smooth_trajectories(directory_bolus, extra_arguments)  
-        if extra_arguments['rescale_data']:
-            print('Rescaling and time-interpolating data')
+        if extra_arguments['interpolate_data']:
+            print('Time-interpolating data')
             self.time_normalized_data()     
-            self.scale_normalized_data() # Error here? (keeping this for backward consistency)
+        self.scale_normalized_data() # Error here? (keeping this for backward consistency)
 
         self.add_rates()
-        if extra_arguments['rescale_data']:
-            self.scale_normalized_data()
+        self.scale_normalized_data()
 
         if extra_arguments['add_health']:
             self.add_healths(extra_arguments)
