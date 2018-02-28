@@ -313,6 +313,10 @@ def measure_eggs(egg_mask, focal_mask, time_series):
 	new_items = characterize_items(new_labels, new_region_indices, new_areas)		
 	total_visible_area = new_items.loc[:, 'Area'].sum()	
 	total_visible_eggs = new_items.loc[:, 'Eggs'].sum()		
+	if total_visible_area == False:
+		total_visible_area = 0
+	if total_visible_eggs == False:
+		total_visible_eggs = 0
 	average_egg_size = new_items[new_items.loc[:, 'Eggs'] == 1].loc[:, 'Area'].mean()
 	single_eggs = (new_items.loc[:, 'Eggs'] == 1).sum()
 	time_series.loc[['visible_area', 'visible_eggs', 'average_egg_size', 'single_eggs']] = (total_visible_area, total_visible_eggs, average_egg_size, single_eggs)
