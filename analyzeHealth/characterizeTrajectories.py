@@ -40,6 +40,7 @@ class CompleteWormDF():
             'bad_worm_kws':[],
             'add_health':False,
             'interpolate_data': True,
+            'scale_data': True,
         }
         [extra_arguments.setdefault(k,v) for k,v in default_args.items()]
         
@@ -105,11 +106,13 @@ class CompleteWormDF():
         self.smooth_trajectories(directory_bolus, extra_arguments)  
         if extra_arguments['interpolate_data']:
             print('Time-interpolating data')
-            self.time_normalized_data()     
-        self.scale_normalized_data() # Error here? (keeping this for backward consistency)
+            self.time_normalized_data()    
+        if extra_arguments['scale_data']:
+            self.scale_normalized_data() # Error here? (keeping this for backward consistency)
 
         self.add_rates()
-        self.scale_normalized_data()
+        if extra_arguments['scale_data']:
+            self.scale_normalized_data()
 
         if extra_arguments['add_health']:
             self.add_healths(extra_arguments)
