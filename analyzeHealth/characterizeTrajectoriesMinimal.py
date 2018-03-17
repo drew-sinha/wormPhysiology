@@ -22,15 +22,15 @@ class BasicWormDF():
         Provides a basic version of Willie's CompleteWormDF
     '''
         
-    def __init__(self, directory_bolus, **kwargs):
+    def __init__(self, data_directories, **kwargs):
         # Set some default values if parameters not given in provided kwargs.
         default_args = {
             'adult_only': False,    # Restrict storage of data in the df to adult_only data
-            'do_smoothing': False,
+            'do_smoothing': False,  # Toggle smoothing
             'measures_nosmoothing': ['age', 'egg_age','ghost_age','great_lawn_area','great_lawn_max_diameter'],
-            'bad_worm_kws':[],
-            'scale_data': True,
-            'regressor_fp':None,
+            'bad_worm_kws':[],      # List of strs of annotations in 'Notes' field to use to screen out animals
+            'scale_data': True,     # Toggle automatic storage of data as z-scores
+            'regressor_fp':None,    # (str/pathlib.Path) filepath for health regressor
         }
         [kwargs.setdefault(k,v) for k,v in default_args.items()]
         
@@ -38,14 +38,10 @@ class BasicWormDF():
         [setattr(self,attr_name,attr_val) 
             for attr_name, attr_val in kwargs.items()]
         
-        # Read in the raw data and set up some basic information.       
-        if type(directory_bolus.ready) is int:
-            data_directories = directory_bolus.data_directories[:directory_bolus.ready]
-        elif type(directory_bolus.ready) is list:
-            data_directories = directory_bolus.data_directories[directory_bolus.ready[0]:directory_bolus.ready[1]]
         print('Working on the following directories:')
         [print(my_directory) for my_directory in data_directories]
         
+        # Read in the raw data and set up some basic information.       
         self.raw = self.read_trajectories(data_directories)
         self.worms = sorted(list(self.raw.keys()))
         
@@ -93,7 +89,7 @@ class BasicWormDF():
         self.stds[:] = np.nan
         
         self.process_eggs()
-        self.adjust_size(directory_bolus)
+        self.adjust_size()
         
         print('Time-interpolating data')
         self.time_normalized_data()    
@@ -301,7 +297,7 @@ class BasicWormDF():
                 (none) self.data is appropriately smoothed....
         '''
         
-        smooth_kws.setdefault('window_length',7)
+        window_length = smooth_kws.get('window_length',7) # default to 7 point
         if len(measures_tosmooth) == 0: measures_tosmooth = self.measures
         
         for measure in measures_tosmooth:
@@ -315,7 +311,7 @@ class BasicWormDF():
                     'origin':(window_length//2)})
             self.data[:,self.measure_indices[measure],:] = filtered_data
 
-    def read_trajectories(self, data_directories)
+    def read_trajectories(self, data_directories):
         '''
         Reads in trajectories from .tsv files in working_directory's measured_health subdirectory and then groups them together nicely in a WormData class. Also adds meta-information from metadata in data_directory.
         '''
