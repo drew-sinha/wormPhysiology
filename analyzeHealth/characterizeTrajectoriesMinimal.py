@@ -90,17 +90,15 @@ class BasicWormDF():
         
         self.process_eggs()
         self.adjust_size()
-        self.add_rates()
         
         print('Time-interpolating data')
         self.time_normalized_data()    
         
-        # Manually adjust bulk_movement to be a rate after time-interpolation
-        # (don't do this in add_rates to ensure this happens once)
-        if 'bulk_movement' in self.measures:
-            self.data[:,self.measure_indices['bulk_movement'],:] *= 1/3
-        
         if self.scale_data:
+            self.scale_normalized_data()
+        
+        self.add_rates()
+        if self.scale_data: # For consistency with Willie
             self.scale_normalized_data()
 
         if self.regressor_fp is not None:
@@ -421,19 +419,13 @@ class BasicWormDF():
         '''
         if rate_variables == None:
             rate_variables = ['cumulative_area', 'cumulative_eggs', 'adjusted_size']
-        if self.adult_only:
-            times = self.mloc(measures=['egg_age'])
-        else:
-            times = self.mloc(measures=['age'])
-        my_timechange = times[:,:,1:]-times[:,:,:-1]
         
         for a_variable in rate_variables:
             print('\tComputing rate of change for ' + a_variable + '.')             
             
             # Compute rates of change.
             my_data = self.mloc(measures = [a_variable])
-            my_varchange = my_data[:, :, 1:] - my_data[:, :, :-1]
-            my_rate = my_varchange/my_timechange
+            my_rate = my_data[:, :, 1:] - my_data[:, :, :-1]
             zfiller = np.zeros(my_data.shape[:2])
             my_rate = np.concatenate([my_rate, zfiller[:, :, np.newaxis]], axis = 2)
             # Actually add the rates data.
@@ -441,7 +433,7 @@ class BasicWormDF():
             self.add_column(my_rate, old_index, a_variable + '_rate')
         return
 
-    def add_healths(self, health_var_name='health',smooth=False, **hs_params):
+    def add_health(self, health_var_name='health',smooth=False, **hs_params):
         '''
         Add 'health' measure to df.
         '''
@@ -591,19 +583,19 @@ class BasicWormDF():
             'intensity_90': None, 
             'intensity_80': None, 
             'cumulative_eggs': 1,
-            'cumulative_eggs_rate': 1,
+            'cumulative_eggs_rate': 1/3,
             'cumulative_area': (1.304/1000)**2,
             'visible_eggs': 1,
             'total_size': (1.304/1000)**2, 
             'age_texture': 1, 
-            'bulk_movement': (1.304/1000),
+            'bulk_movement': (1.304/1000)/3,
             'stimulated_rate_a': (1.304/1000),
             'stimulated_rate_b': (1.304/1000),
             'unstimulated_rate': (1.304/1000),
             'area': 1/100000,
             'life_texture': -1,
             'adjusted_size': (1.304/1000)**2,
-            'adjusted_size_rate': ((1.304/1000)**2),
+            'adjusted_size_rate': ((1.304/1000)**2)/3,
             'great_lawn_area': (1.304/1000)**2, 
             'texture': (-1/24),
             'eggs': (-1/24),
