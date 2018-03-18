@@ -90,11 +90,15 @@ class BasicWormDF():
         
         self.process_eggs()
         self.adjust_size()
+        self.add_rates()
         
         print('Time-interpolating data')
         self.time_normalized_data()    
-
-        self.add_rates()
+        
+        # Manually adjust bulk_movement to be a rate after time-interpolation
+        # (don't do this in add_rates to ensure this happens once)
+        if 'bulk_movement' in self.measures:
+            self.data[:,self.measure_indices['bulk_movement'],:] *= 1/3
         
         if self.scale_data:
             self.scale_normalized_data()
@@ -417,15 +421,21 @@ class BasicWormDF():
         '''
         if rate_variables == None:
             rate_variables = ['cumulative_area', 'cumulative_eggs', 'adjusted_size']
+        if self.adult_only:
+            times = self.mloc(measures=['egg_age'])
+        else:
+            times = self.mloc(measures=['age'])
+        my_timechange = times[:,:,1:]-times[:,:,:-1]
+        
         for a_variable in rate_variables:
             print('\tComputing rate of change for ' + a_variable + '.')             
             
             # Compute rates of change.
             my_data = self.mloc(measures = [a_variable])
-            my_rate = my_data[:, :, 1:] - my_data[:, :, :-1]
+            my_varchange = my_data[:, :, 1:] - my_data[:, :, :-1]
+            my_rate = my_varchange/my_timechange
             zfiller = np.zeros(my_data.shape[:2])
             my_rate = np.concatenate([my_rate, zfiller[:, :, np.newaxis]], axis = 2)
-
             # Actually add the rates data.
             old_index = self.measure_indices[a_variable]
             self.add_column(my_rate, old_index, a_variable + '_rate')
@@ -436,7 +446,7 @@ class BasicWormDF():
         Add 'health' measure to df.
         '''
         assert hs_params.get('regressor') is not None
-        health_scores = self.calc_healthscore(regressor) # Use default settings for this.
+        health_scores = self.calc_healthscore(**hs_params) # Use default settings for this.
         column_data = np.expand_dims(health_scores, axis = 1)
         self.add_column(column_data, -3, health_var_name)
         if self.scale_data: self.scale_normalized_data()
@@ -446,7 +456,7 @@ class BasicWormDF():
 
     
     def calc_healthscore(self,regressor,measurements=None,
-        worms=None,times=None,predict_mode='simple',regressed_variable='ghost_age'):
+        worms=None,times=None,predict_mode='predict',regressed_variable='ghost_age'):
         '''
             Calculate health scores for measurement data in this dataframe using the specified regressor
             
@@ -473,8 +483,15 @@ class BasicWormDF():
         
         nan_mask = np.isnan(measurement_data_flat).any(axis=1)
         
-        if predict_mode == 'simple':
-            health_score_flat = regressor.predict(measurement_data)
+        if predict_mode == 'predict':
+            health_score_flat = regressor.predict(measurement_data_flat[~nan_mask])
+        elif predict_mode == 'refit':
+            regressed_data = self.mloc(measures=[regressed_variable],worms=worms,times=times)[:,0,:] #[animals,time]
+            regressed_data_flat = remaining_life.flatten() #[animals xtime]
+            
+            regressor.fit(measurement_data_flat[~nan_mask],
+                regressed_data_flat[~nan_mask])
+            health_score_flat = regressor.predict(measurement_data_flat[~nan_mask])
         elif predict_mode == 'cv':
             regressed_data = self.mloc(measures=[regressed_variable],worms=worms,times=times)[:,0,:] #[animals,time]
             regressed_data_flat = remaining_life.flatten() #[animals xtime]
@@ -482,8 +499,8 @@ class BasicWormDF():
             kfold_cv = model_selection.KFold(n_splits=4,shuffle=True)
             health_score_flat = model_selection.cross_val_predict(
                 regressor,
-                biomarker_data_flat[~nan_mask,:],
-                remaining_life_flat[~nan_mask],
+                measurement_data_flat[~nan_mask,:],
+                regressed_data_flat[~nan_mask],
                 cv = kfold_cv,
                 n_jobs = 4) # Animals x time
         
@@ -574,19 +591,19 @@ class BasicWormDF():
             'intensity_90': None, 
             'intensity_80': None, 
             'cumulative_eggs': 1,
-            'cumulative_eggs_rate': 1/3,
+            'cumulative_eggs_rate': 1,
             'cumulative_area': (1.304/1000)**2,
             'visible_eggs': 1,
             'total_size': (1.304/1000)**2, 
             'age_texture': 1, 
-            'bulk_movement': (1.304/1000)/3,
+            'bulk_movement': (1.304/1000),
             'stimulated_rate_a': (1.304/1000),
             'stimulated_rate_b': (1.304/1000),
             'unstimulated_rate': (1.304/1000),
             'area': 1/100000,
             'life_texture': -1,
             'adjusted_size': (1.304/1000)**2,
-            'adjusted_size_rate': ((1.304/1000)**2)/3,
+            'adjusted_size_rate': ((1.304/1000)**2),
             'great_lawn_area': (1.304/1000)**2, 
             'texture': (-1/24),
             'eggs': (-1/24),
@@ -598,11 +615,9 @@ class BasicWormDF():
 
         if my_var in my_units.keys():
             my_unit = my_units[my_var]
-            fancy_name = self.display_names(my_var)
             unit_multiplier = unit_multipliers[my_var]
         else:
             my_unit = 'Raw Numbers'
-            fancy_name = 'No Fancy Name for ' + my_var
             unit_multiplier = 1
     
         if my_unit != 'Standard Deviations' and unit_multiplier != None:
@@ -612,7 +627,7 @@ class BasicWormDF():
             new_array = unit_multiplier*((an_array*my_std) + my_mean)
         else:
             new_array = an_array
-        return (new_array, my_unit, fancy_name)
+        return (new_array, my_unit)
 
 def get_worm_names(data_directories):
     '''
