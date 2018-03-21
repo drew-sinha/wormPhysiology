@@ -28,6 +28,7 @@ class BasicWormDF():
             'adult_only': False,    # Restrict storage of data in the df to adult_only data
             'do_smoothing': False,  # Toggle smoothing
             'measures_nosmoothing': ['age', 'egg_age','ghost_age','great_lawn_area','great_lawn_max_diameter'],
+            'smoothing_params':{'window_length':9}, # Parameters for the smoothing function provided
             'bad_worm_kws':[],      # List of strs of annotations in 'Notes' field to use to screen out animals
             'scale_data': True,     # Toggle automatic storage of data as z-scores
             'regressor_fp':None,    # (str/pathlib.Path) filepath for health regressor
@@ -107,7 +108,7 @@ class BasicWormDF():
             self.add_health(health_var_name='health',smooth=False,regressor=regressor)
             
         if self.do_smoothing:
-            self.smooth_data_causalMA(measures_tosmooth = set(self.measures).difference(self.measures_nosmoothing)) # Default smoothing.
+            self.smooth_data_causalMA(measures_tosmooth = set(self.measures).difference(self.measures_nosmoothing),**self.smoothing_params)
     
     def mloc(self, worms = None, measures = None, times = None):
         '''
@@ -300,6 +301,7 @@ class BasicWormDF():
         '''
         
         window_length = smooth_kws.get('window_length',7) # default to 7 point
+        print('Using window length = {}'.format(window_length))
         if len(measures_tosmooth) == 0: measures_tosmooth = self.measures
         
         for measure in measures_tosmooth:
