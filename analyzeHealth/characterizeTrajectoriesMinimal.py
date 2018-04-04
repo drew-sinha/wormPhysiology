@@ -28,10 +28,11 @@ class BasicWormDF():
             'adult_only': False,    # Restrict storage of data in the df to adult_only data
             'do_smoothing': False,  # Toggle smoothing
             'measures_nosmoothing': ['age', 'egg_age','ghost_age','great_lawn_area','great_lawn_max_diameter'],
-            'smoothing_params':{'window_length':9}, # Parameters for the smoothing function provided
+            'smoothing_params':{'window_length':7}, # Parameters for the smoothing function provided
             'bad_worm_kws':[],      # List of strs of annotations in 'Notes' field to use to screen out animals
             'scale_data': True,     # Toggle automatic storage of data as z-scores
             'regressor_fp':None,    # (str/pathlib.Path) filepath for health regressor
+            'raw_data_rescalingdf':None,  # (str/pathlib.Path) filepath to reference BasicWormDF for rescaling data appropriately for comparison
         }
         [kwargs.setdefault(k,v) for k,v in default_args.items()]
         
@@ -104,7 +105,11 @@ class BasicWormDF():
 
         if self.regressor_fp is not None:
             with pathlib.Path(self.regressor_fp).open('rb') as reg_file:
-                regressor = pickle.load(reg_data)['fit_regressor']
+                reg_data = pickle.load(reg_file)
+                try:
+                    regressor = reg_data['fit_regressor']
+                except TypeError:    # Try 'best_estimator' from param search'd *SearchCV
+                    regressor = reg_data.best_estimator_
             self.add_health(health_var_name='health',smooth=False,regressor=regressor)
             
         if self.do_smoothing:
@@ -166,17 +171,31 @@ class BasicWormDF():
         '''
         Rescale normalized data so that it's in terms of standard deviations from the overall mean.
         '''
+        
+        if self.raw_data_rescalingdf is not None:
+            print('Using df from {} for scaling'.format(str(self.raw_data_rescalingdf)))
+            self.raw_data_rescalingdf = pathlib.Path(self.raw_data_rescalingdf)
+            with self.raw_data_rescalingdf.open('rb') as my_file:
+                rescaling_df = pickle.load(my_file)['adult_df']
+                
         for var_index in range(len(self.measures)):
-            if np.isnan(self.means[var_index]) and self.measures[var_index] not in ['age','ghost_age','egg_age']:
-                a_var = self.measures[var_index]            
-                my_data = np.ndarray.flatten(self.mloc(measures = [a_var]))
-                my_data = my_data[~np.isnan(my_data)]
-                self.means[var_index] = np.mean(my_data)
-                self.stds[var_index] = np.std(my_data)
-                self.data[:, var_index, :] = (self.data[:, var_index, :] - self.means[var_index])/self.stds[var_index]     
-            elif self.measures[var_index] in ['age','ghost_age','egg_age']:
+            if self.measures[var_index] in ['age','ghost_age','egg_age']:
                 self.means[var_index] = 0
                 self.stds[var_index] = 1
+            elif self.raw_data_rescalingdf is None:
+                if np.isnan(self.means[var_index]):
+                    a_var = self.measures[var_index]            
+                    my_data = np.ndarray.flatten(self.mloc(measures = [a_var]))
+                    my_data = my_data[~np.isnan(my_data)]
+                    self.means[var_index] = np.mean(my_data)
+                    self.stds[var_index] = np.std(my_data)
+                    self.data[:, var_index, :] = (self.data[:, var_index, :] - self.means[var_index])/self.stds[var_index]     
+            else: # One to rescale according to another df
+                if np.isnan(self.means[var_index]):
+                    a_var = self.measures[var_index]
+                    self.means[var_index] = rescaling_df.means[rescaling_df.measure_indices[a_var]]
+                    self.stds[var_index] = rescaling_df.stds[rescaling_df.measure_indices[a_var]]
+                    self.data[:, var_index, :] = (self.data[:, var_index, :] - self.means[var_index])/self.stds[var_index]     
         return
     
     def time_normalized_data(self):
@@ -466,14 +485,19 @@ class BasicWormDF():
                 health_score - array containing health scores with shape [animals,time]
         '''
         if measurements is None:
-            measurements = ['intensity_80',       
-                'adjusted_size', 'adjusted_size_rate',        
-                'cumulative_eggs', 'cumulative_eggs_rate',        
-                'life_texture',        
-                'bulk_movement', 'stimulated_rate_a', 'stimulated_rate_b', 'unstimulated_rate']
+            #~ measurements = ['intensity_80',       
+                #~ 'adjusted_size', 'adjusted_size_rate',        
+                #~ 'cumulative_eggs', 'cumulative_eggs_rate',        
+                #~ 'life_texture',        
+                #~ 'bulk_movement', 'stimulated_rate_a', 'stimulated_rate_b', 'unstimulated_rate']
+            measurements = ['bulk_movement','stimulated_rate_a', 'stimulated_rate_b', 'unstimulated_rate', 
+                'intensity_80', 
+                'life_texture',
+                'adjusted_size','adjusted_size_rate', 
+                'cumulative_eggs','cumulative_eggs_rate']
         
         measurement_data = self.mloc(measures=measurements,worms=worms,times=times) #[animals, measurements, time]
-        measurement_data_flat = measurements_data.swapaxes(1,2).reshape(-1,len(measurements)) #[animals x time,measurements]
+        measurement_data_flat = measurement_data.swapaxes(1,2).reshape(-1,len(measurements)) #[animals x time,measurements]
         
         nan_mask = np.isnan(measurement_data_flat).any(axis=1)
         
@@ -498,9 +522,9 @@ class BasicWormDF():
                 cv = kfold_cv,
                 n_jobs = 4) # Animals x time
         
-        health_score = np.full_like(regressed_data_flat,np.nan)
+        health_score = np.full(measurement_data.shape[0]*measurement_data.shape[2],np.nan)
         health_score[~nan_mask] = health_score_flat
-        health_score = np.reshape(health_score,regressed_data.shape)
+        health_score = np.reshape(health_score,(measurement_data.shape[0],measurement_data.shape[2]))
         
         return health_score
     
