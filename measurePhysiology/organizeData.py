@@ -1195,39 +1195,41 @@ class HumanCheckpoints():
         return
 
 
-    def delete_dead(self, max_time_to_keep = 24,dry_run=False):
+    def delete_dead(self, max_time_to_keep = 48,dry_run=False):
         '''
         Delete frames after death from the subdirectory to save space.
         
             max_time_to_keep - Keep data from timepoints taken earlier than this amount of time past time of death (in hours)
             dry_run - Flag to toggle doing a dry run (useful for debugging, etc.)
         '''
-        experiment_directory = self.experiment_directory
-        timepoint_idx_map = {timepoint:i for i,timepoint in enumerate(self.metadata.timepoints)}
+        query = input('Delete image data taken after {} hours post-death for all worms (Y/N)?'.format(max_time_to_keep))
+        if query.lower() != 'y': return
+        
+        timepoint_idx_map = {timepoint:i for i,timepoint in enumerate(self.metadata['timepoints'])}
         
         for worm_directory in self.worm_directories:
-            death_timepoint_idx = self.latest_annotations.loc[worm_directory,'Death']
-            death_time = self.metadata.timestamps[death_timepoint_idx]
+            worm_entry = self.latest_annotations[
+                self.latest_annotations.loc[:, 'Worm_Index'] == (worm_directory.split(os.path.sep)[-1])]
+            death_timepoint_idx = int(worm_entry['Death'].values[0])
+            death_time = self.metadata['timestamps'][death_timepoint_idx]
+            if dry_run: print('Animal died on {}'.format(self.metadata['timepoints'][death_timepoint_idx]))
             
-            for my_file in os.path.isfile(self.data_directory + os.path.sep + worm_directory):
-                if (my_file.split('.')[-1] in ['png', 'tiff']) and (
-                    (self.metadata.timestamps[timepoint_idx_map[my_file[:15]]]-death_time)/3600 > max_time_to_keep):
+            for my_file in os.listdir(worm_directory):
+                if (my_file.split('.')[-1] in ['png', 'tiff']) and ('great_lawn' not in my_file) and (
+                    (self.metadata['timestamps'][timepoint_idx_map[my_file[:15]]]-death_time)/3600 > max_time_to_keep):
                         if not dry_run:
-                            os.remove(self.data_directory + os.path.sep + worm_directory + os.path.sep + my_file)
+                            os.remove(worm_directory + os.path.sep + my_file)
                         else:
-                            print(f'File{self.data_directory + os.path.sep + worm_directory + os.path.sep + my_file} would have been deleted.')
+                            print('File {} would have been deleted.'.format(worm_directory + os.path.sep + my_file))
             
-            if os.path.isdir(self.data_directory+os.path.sep+worm_directory+os.path.sep+'life_after_death'):
-                for my_file in os.path.isfile(self.data_directory + os.path.sep + worm_directory+os.path.sep+'life_after_death'):
+            if os.path.isdir(worm_directory+os.path.sep+'life_after_death'):
+                for my_file in os.listdir(worm_directory+os.path.sep+'life_after_death'):
                     if (my_file.split('.')[-1] in ['png', 'tiff']) and (
-                        (self.metadata.timepoints[my_file[:15]]-death_time)/3600 > max_time_to_keep):
+                        (self.metadata['timestamps'][timepoint_idx_map[my_file[:15]]]-death_time)/3600 > max_time_to_keep):
                             if not dry_run:
-                                os.remove(self.data_directory + os.path.sep + worm_directory + os.path.sep + 'life_after_death' + my_file)
+                                os.remove(worm_directory + os.path.sep + 'life_after_death' + os.path.sep + my_file)
                             else:
-                                print('File {} would have been deleted.'.format(self.data_directory + os.path.sep + worm_directory + os.path.sep + 'life_after_death' + os.path.sep +  my_file))
-            
-                    
-        return
+                                print('File {} would have been deleted.'.format(worm_directory + os.path.sep + 'life_after_death' + os.path.sep +  my_file))
 
     def move_dead(self, experiment_directory):
         '''
