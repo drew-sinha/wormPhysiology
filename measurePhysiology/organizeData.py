@@ -1195,28 +1195,37 @@ class HumanCheckpoints():
         return
 
 
-    def delete_dead(self, experiment_directory = None, max_time_to_keep = 24):
+    def delete_dead(self, max_time_to_keep = 24,dry_run=False):
         '''
         Delete frames after death from the subdirectory to save space.
         
             max_time_to_keep - Keep data from timepoints taken earlier than this amount of time past time of death (in hours)
-    
+            dry_run - Flag to toggle doing a dry run (useful for debugging, etc.)
         '''
-        if experiment_directory == None or experiment_directory.isdigit():
-            my_prefix = '0'         
-            experiment_directory = self.data_directory
-        else: 
-            my_prefix = experiment_directory
-            experiment_directory = self.more_directories[my_prefix]
-        
+        experiment_directory = self.experiment_directory
         timepoint_idx_map = {timepoint:i for i,timepoint in enumerate(self.metadata.timepoints)}
         
         for worm_directory in self.worm_directories:
-            death_timepoint_idx = self.latest_annotations.loc[worm_directory]
-            cutoff_timepoint_idx = np.abs((self.metadata.timepoints[death_timepoint_idx]-self.metadata.timepoints[0])/3600 - max_time_to_keep)
+            death_timepoint_idx = self.latest_annotations.loc[worm_directory,'Death']
+            death_time = self.metadata.timestamps[death_timepoint_idx]
+            
             for my_file in os.path.isfile(self.data_directory + os.path.sep + worm_directory):
-                if my_file.split('.')[-1] in ['png', 'tiff'] and timepoint_idx_map[my_file[:13]] > cutoff_timepoint_idx:
-                    os.remove(self.data_directory + os.path.sep + worm_directory + os.path.sep + my_file)
+                if (my_file.split('.')[-1] in ['png', 'tiff']) and (
+                    (self.metadata.timestamps[timepoint_idx_map[my_file[:15]]]-death_time)/3600 > max_time_to_keep):
+                        if not dry_run:
+                            os.remove(self.data_directory + os.path.sep + worm_directory + os.path.sep + my_file)
+                        else:
+                            print(f'File{self.data_directory + os.path.sep + worm_directory + os.path.sep + my_file} would have been deleted.')
+            
+            if os.path.isdir(self.data_directory+os.path.sep+worm_directory+os.path.sep+'life_after_death'):
+                for my_file in os.path.isfile(self.data_directory + os.path.sep + worm_directory+os.path.sep+'life_after_death'):
+                    if (my_file.split('.')[-1] in ['png', 'tiff']) and (
+                        (self.metadata.timepoints[my_file[:15]]-death_time)/3600 > max_time_to_keep):
+                            if not dry_run:
+                                os.remove(self.data_directory + os.path.sep + worm_directory + os.path.sep + 'life_after_death' + my_file)
+                            else:
+                                print('File {} would have been deleted.'.format(self.data_directory + os.path.sep + worm_directory + os.path.sep + 'life_after_death' + os.path.sep +  my_file))
+            
                     
         return
 
